@@ -12,15 +12,15 @@ namespace PerfectChess
         {
             for (int squareIndex = 0; squareIndex < 64; squareIndex++)
             {
-                RayN[squareIndex] = GetRayBitboard(squareIndex, 0, 1);
-                RayE[squareIndex] = GetRayBitboard(squareIndex, 1, 0);
-                RayS[squareIndex] = GetRayBitboard(squareIndex, 0, -1);
-                RayW[squareIndex] = GetRayBitboard(squareIndex, -1, 0);
+                RayN[squareIndex] = GetRayBitboard(squareIndex, 0, 1) ^ (1UL << squareIndex);
+                RayE[squareIndex] = GetRayBitboard(squareIndex, 1, 0) ^ (1UL << squareIndex);
+                RayS[squareIndex] = GetRayBitboard(squareIndex, 0, -1) ^ (1UL << squareIndex);
+                RayW[squareIndex] = GetRayBitboard(squareIndex, -1, 0) ^ (1UL << squareIndex);
 
-                RayNE[squareIndex] = GetRayBitboard(squareIndex, 1, 1);
-                RaySE[squareIndex] = GetRayBitboard(squareIndex, 1, -1);
-                RaySW[squareIndex] = GetRayBitboard(squareIndex, -1, -1);
-                RayNW[squareIndex] = GetRayBitboard(squareIndex, -1, 1);
+                RayNE[squareIndex] = GetRayBitboard(squareIndex, 1, 1) ^ (1UL << squareIndex);
+                RaySE[squareIndex] = GetRayBitboard(squareIndex, 1, -1) ^ (1UL << squareIndex);
+                RaySW[squareIndex] = GetRayBitboard(squareIndex, -1, -1) ^ (1UL << squareIndex);
+                RayNW[squareIndex] = GetRayBitboard(squareIndex, -1, 1) ^ (1UL << squareIndex);
             }
         }
         public static readonly UInt64[] RayN = new UInt64[64];
@@ -35,7 +35,7 @@ namespace PerfectChess
 
         private static UInt64 GetRayBitboard(int square, int dx, int dy)
         {
-            if (square > 63 | square < 0) return 0;
+            if (square > 63 || square < 0) return 0;
             UInt64 bitboard = 1UL << square;
             if (square / 8 == (square + dx) / 8)
                 bitboard |= GetRayBitboard(square + dx + 8 * dy, dx, dy);
@@ -55,12 +55,19 @@ namespace PerfectChess
         {
             string Res = string.Empty;
 
-            for (int i = 0; i < 64; i++)
+            UInt64 bits8;
+            for (int j = 0; j < 8; j++)
             {
-                Res += bitboard & 1;
-                bitboard >>= 1;
-                if (i % 8 == 7) Res += "\n";
+                bits8 = (bitboard & 0xFF00000000000000) >> 56;
+                for (int i = 0; i < 8; i++)
+                {
+                    Res += bits8 & 1;
+                    bits8 >>= 1;
+                }
+                Res += "\n";
+                bitboard <<= 8;
             }
+        
             return Res;
         }
     }

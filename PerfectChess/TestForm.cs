@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static PerfectChess.Move;
+using static PerfectChess.Color;
 
 namespace PerfectChess
 {
@@ -18,7 +19,11 @@ namespace PerfectChess
             InitializeComponent();
             //TestLS1BMS1B();
             //TestMove();
-            TestTryBitboard();
+            //TestTryBitboard();
+            //TestPreComputed();
+            //TestAttacks();
+            //TestRookAttacks();
+            TestBishopAttacks();
         }
 
         private void TestLS1BMS1B()
@@ -60,6 +65,61 @@ namespace PerfectChess
         {
             UInt64 ToCheck = 0b1000000010000000100000001000000010000000100000001000000010000000;
             Box.Text += Convert.ToString((long)ToCheck, 2) + "\n" + Bitboard.ToString(ToCheck);
+            Box.Text += "\n" + Attack.TryGetBitboard(5, 5) + " " + Attack.TryGetBitboard(-2, -3) + " " + Attack.TryGetBitboard(23, 6);
+        }
+        private void TestPreComputed()
+        {
+            Box.Text += Bitboard.ToString(Bitboard.RayN[17]);
+            Box.Text += "\n";
+
+            Box.Text += Bitboard.ToString(Bitboard.RaySE[9]);
+            Box.Text += "\n";
+
+            Box.Text += Bitboard.ToString(Bitboard.RayNE[14]);
+            Box.Text += "\n";
+
+            Box.Text += Bitboard.ToString(Bitboard.RayW[63]);
+            Box.Text += "\n";
+
+            Box.Text += Bitboard.ToString(Bitboard.RaySW[56]);
+            Box.Text += "\n";
+
+
+        }
+        private void TestAttacks()
+        {
+            Box.Text += Bitboard.ToString(Attack.Knight(17));
+            Box.Text += "\n";
+
+            Box.Text += Bitboard.ToString(Attack.King(23));
+            Box.Text += "\n";
+
+            Box.Text += Bitboard.ToString(Attack.King(15));
+            Box.Text += "\n";
+
+            Box.Text += Bitboard.ToString(Attack.King(42));
+            Box.Text += "\n";
+
+            Box.Text += Bitboard.ToString(Attack.Pawn(Black, 35));
+            Box.Text += "\n";
+
+            Box.Text += Bitboard.ToString(Attack.Pawn(White, 50));
+            Box.Text += "\n";
+        }
+        private void TestRookAttacks()
+        {
+            UInt64 Occupied = 0x00000084800000A00;
+            Box.Text += BitOperations.BitScanForward(Occupied) + "\n";
+            Box.Text += Bitboard.ToString(Occupied);
+            Box.Text += "\n";
+            Box.Text += Bitboard.ToString(Attack.Rook(35, Occupied));
+        }
+        private void TestBishopAttacks()
+        {
+            UInt64 Occupied = 0x4002049840020000;
+            Box.Text += Bitboard.ToString(Occupied);
+            Box.Text += "\n";
+            Box.Text += Bitboard.ToString(Attack.Bishop(35, Occupied));
         }
     }
 }

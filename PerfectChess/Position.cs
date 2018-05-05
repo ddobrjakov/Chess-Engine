@@ -64,7 +64,14 @@ namespace PerfectChess
 
 
 
-
+        public static int File(int square)
+        {
+            return square & 7;
+        }
+        public static int Rank(int square)
+        {
+            return square >> 3;
+        }
     }
     
 }
