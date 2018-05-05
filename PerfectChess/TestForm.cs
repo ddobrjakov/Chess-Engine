@@ -17,29 +17,30 @@ namespace PerfectChess
         {
             InitializeComponent();
             //TestLS1BMS1B();
-            TestMove();
+            //TestMove();
+            TestTryBitboard();
         }
 
         private void TestLS1BMS1B()
         {
             UInt64 ToCheck = 0b1000000010000000100000001000000010000000100000001000000010000000;
             Box.Text += Convert.ToString((long)ToCheck, 2) + "\n";
-            Box.Text += PreComputedTables.BitScanForward(ToCheck) + " " + PreComputedTables.BitScanReverse((ulong)ToCheck) + "\n";
+            Box.Text += BitOperations.BitScanForward(ToCheck) + " " + BitOperations.BitScanReverse((ulong)ToCheck) + "\n";
 
             UInt64 ToCheck2 = 0b0000100010000000100000001000000010000000100000001000000010000000;
             Box.Text += Convert.ToString((long)ToCheck2, 2) + "\n";
-            Box.Text += PreComputedTables.BitScanForward(ToCheck2) + " " + PreComputedTables.BitScanReverse((ulong)ToCheck2) + "\n";
+            Box.Text += BitOperations.BitScanForward(ToCheck2) + " " + BitOperations.BitScanReverse((ulong)ToCheck2) + "\n";
 
             Random R = new Random();
             for (int i = 0; i < 5; i++)
             {
                 int Check = R.Next();
                 Box.Text += Convert.ToString((long)Check, 2) + "\n";
-                Box.Text += PreComputedTables.BitScanForward((ulong)Check) + " " + PreComputedTables.BitScanReverse((ulong)Check) + "\n";
+                Box.Text += BitOperations.BitScanForward((ulong)Check) + " " + BitOperations.BitScanReverse((ulong)Check) + "\n";
 
             }
 
-            Box.Text += PreComputedTables.BitScanForward(0) + " " + PreComputedTables.BitScanForward(0);
+            Box.Text += BitOperations.BitScanForward(0) + " " + BitOperations.BitScanForward(0);
         }
         private void TestMove()
         {
@@ -54,6 +55,11 @@ namespace PerfectChess
             int Move3 = PerfectChess.Move.Create(0, 16, Piece.Rook | Color.White, Piece.Queen | Color.Black);
             Box.Text += "Rook should be capturing queen\n";
             Box.Text += PerfectChess.Move.Details(Move3) + "\n";
+        }
+        private void TestTryBitboard()
+        {
+            UInt64 ToCheck = 0b1000000010000000100000001000000010000000100000001000000010000000;
+            Box.Text += Convert.ToString((long)ToCheck, 2) + "\n" + Bitboard.ToString(ToCheck);
         }
     }
 }

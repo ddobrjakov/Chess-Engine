@@ -45,6 +45,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attack.cs" />
+    <Compile Include="Bitboard.cs" />
+    <Compile Include="BitOperations.cs" />
     <Compile Include="Core\Color.cs" />
     <Compile Include="Core\Move.cs" />
     <Compile Include="Form1.cs">
