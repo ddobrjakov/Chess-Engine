@@ -16,7 +16,10 @@ namespace PerfectChess
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+
+            Form1 F = new Form1();
+            Presenter P = new Presenter(F); 
+            Application.Run(F);
         }
     }
 }

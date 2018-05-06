@@ -20,11 +20,23 @@ namespace PerfectChess
                 62, 55, 45, 31, 13, 39, 36, 6,
                 61, 44, 12, 35, 60, 11, 10, 9,
             };
+
+        /// <summary>
+        /// Returns the index of Least Significant Bit
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static int BitScanForward(UInt64 b)
         {
             //Debug.Assert(b > 0, "Target number should not be zero");
             return MagicTable[((ulong)((long)b & -(long)b) * DeBruijn_64) >> 58];
         }
+
+        /// <summary>
+        /// Return the index of Most Significant Bit
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
         public static int BitScanReverse(UInt64 b)
         {
             b |= b >> 1;
@@ -37,5 +49,52 @@ namespace PerfectChess
             return MagicTable[b * DeBruijn_64 >> 58];
         }
 
+        /// <summary>
+        /// Returns the index of set bit assuming there is only one such
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static int OnlyBitIndex(UInt64 b)
+        {
+            return MagicTable[(b * DeBruijn_64) >> 58];
+        }
+
+        /// <summary>
+        /// Returns the index of Least Significant set Bit && resets it
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static int PopLS(ref UInt64 b)
+        {
+            UInt64 isolatedLSBit = b & (0UL - b);
+            b &= b - 1;
+            return MagicTable[(isolatedLSBit * DeBruijn_64) >> 58];
+        }
+
+        /// <summary>
+        /// Removes all the set bits from number except the least significant one
+        /// </summary>
+        /// <param name="bitboard"></param>
+        /// <returns></returns>
+        public static UInt64 Isolate(UInt64 bitboard)
+        {
+            return bitboard & (0UL - bitboard);
+        }
+
+        /// <summary>
+        /// Returns the count of set bits
+        /// </summary>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static int bitboard_popcount(UInt64 b)
+        {
+            int cnt = 0;
+            while (b != 0)
+            {
+                b &= (b - 1);
+                cnt++;
+            }
+            return cnt;
+        }
     }
 }
