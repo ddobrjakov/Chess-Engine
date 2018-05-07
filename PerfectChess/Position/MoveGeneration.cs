@@ -60,7 +60,7 @@ namespace PerfectChess
 
                 // Enpassant Square is on the 3rd/6th rank
                 UInt64 enPassantPawnBitboard = PieceBitboard[ColorToMove | Piece.Pawn] & Attack.Pawn(Enemy, EnPassantSquare);
-                UInt64 enPassantVictimBitboard = 1UL << (EnPassantSquare + 16 * Enemy - 8);
+                UInt64 enPassantVictimBitboard = 1UL << (EnPassantSquare + 8 - 16 * Enemy); //+ 8 - 16 * enemy
                 while (enPassantPawnBitboard != 0)
                 {
                     // Performing necessary part of the move to determine it's legality
@@ -402,18 +402,42 @@ namespace PerfectChess
             while (ourPieces != 0)
             {
                 //Getting the moving piece square
-                int FromSquare = BitOperations.PopLS(ref ourPieces);
+                int SquareFrom = BitOperations.PopLS(ref ourPieces);
 
-                UInt64 moveBitboard = targetBitboard & Attack.King(FromSquare);
+                UInt64 moveBitboard = targetBitboard & Attack.King(SquareFrom);
                 while (moveBitboard != 0)
                 {
                     // Perform minimal state changes to mimick real move and check for legality. 
-                    Int32 ToSquare = BitOperations.PopLS(ref moveBitboard);
-                    int CapturedPiece = SquarePiece[ToSquare];
+                    Int32 SquareTo = BitOperations.PopLS(ref moveBitboard);
+                    int CapturedPiece = SquarePiece[SquareTo];
 
-                    if (IsLegal(FromSquare, ToSquare))
+
+
+                    UInt64 occupiedBBSaved = OccupiedBB;
+
+                    //Getting the captured piece (might be easily Piece.None = 0)
+                    Int32 capture = SquarePiece[SquareTo];
+
+                    //Setting up properties to prepare for the check test
+
+                    PieceBitboard[capture] ^= 1UL << SquareTo; //Deletes piece from it's table if it's there (if not, nothing bad happens, 
+                                                               //because we don't care about PieceBitBoard[0] and moreover we'll put the value back anyway
+
+                    OccupiedBB ^= 1UL << SquareFrom; //origin square now frees up
+                    OccupiedBB |= 1UL << SquareTo; //destinatinion square gets our piece
+
+
+                    // 2) Now everything is ready to test if the king is checked;
+                    bool res = !IsAttacked(ColorToMove, SquareTo);
+
+                    // 3) We've got the answer, but have to return everything back
+
+                    PieceBitboard[capture] ^= (1UL << SquareTo); //XOR is commutative, so that one is pretty easy
+                    OccupiedBB = occupiedBBSaved; //thanks to us in the past saving it, now we can simply restore the occupied bitboard
+
+                    if (res)
                     {
-                        moves.Add(Move.Create(FromSquare, ToSquare, ColorToMove | King, CapturedPiece));
+                        moves.Add(Move.Create(SquareFrom, SquareTo, ColorToMove | King, CapturedPiece));
                     }
                 }
             }

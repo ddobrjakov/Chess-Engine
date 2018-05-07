@@ -177,13 +177,13 @@ namespace PerfectChess
         {
             BoardPanel.BackgroundImage = PreSavedBackground;
 
-            int ToX = PerfectChess.Move.ToSquare(Move) % 8;
-            int ToY = PerfectChess.Move.ToSquare(Move) / 8;
-            Square TO = Square.Get(ToX + 1, ToY + 1);
+            //int ToX = PerfectChess.Move.ToSquare(Move) % 8;
+            //int ToY = PerfectChess.Move.ToSquare(Move) / 8;
+            Square TO = Square.Get(PerfectChess.Move.ToSquare(Move));
 
-            int FromX = PerfectChess.Move.FromSquare(Move) % 8;
-            int FromY = PerfectChess.Move.FromSquare(Move) / 8;
-            Square FROM = Square.Get(FromX + 1, FromY + 1);
+            //int FromX = PerfectChess.Move.FromSquare(Move) % 8;
+            //int FromY = PerfectChess.Move.FromSquare(Move) / 8;
+            Square FROM = Square.Get(PerfectChess.Move.FromSquare(Move));
 
             BoardPanel.ResetSquare(TO);
             BoardPanel.SetSquareImage(TO, BoardPanel.GetSquareImage(FROM));
@@ -192,6 +192,36 @@ namespace PerfectChess
 
             BoardPanel.Invalidate(true);
             BoardPanel.Refresh();
+
+            if (PerfectChess.Move.Castling(Move))
+            {
+                Square ROOK_TO = Square.Get((PerfectChess.Move.FromSquare(Move) + PerfectChess.Move.ToSquare(Move)) / 2);
+                Square ROOK_FROM = Square.Get((PerfectChess.Move.ToSquare(Move) > PerfectChess.Move.FromSquare(Move)) ? PerfectChess.Move.FromSquare(Move) + 3 : PerfectChess.Move.FromSquare(Move) - 4);
+                BoardPanel.ResetSquare(ROOK_TO);
+                BoardPanel.SetSquareImage(ROOK_TO, BoardPanel.GetSquareImage(ROOK_FROM));
+                BoardPanel.ResetSquare(ROOK_FROM);
+                BoardPanel.Invalidate();
+
+                BoardPanel.Invalidate(true);
+                BoardPanel.Refresh();
+            }
+            if (PerfectChess.Move.Promotion(Move))
+            {
+                BoardPanel.ResetSquare(TO);
+                BoardPanel.SetSquareImage(TO, ViewModelConnector.PieceImage[PerfectChess.Move.PromotionPiece(Move)]);
+                BoardPanel.Invalidate();
+
+                BoardPanel.Invalidate(true);
+                BoardPanel.Refresh();
+            }
+            if (PerfectChess.Move.EnPassant(Move))
+            {
+                BoardPanel.ResetSquare(Square.Get(PerfectChess.Move.ToSquare(Move) - 8 + 16 * (PerfectChess.Move.FromPiece(Move) & Color.Mask)));
+                BoardPanel.Invalidate();
+
+                BoardPanel.Invalidate(true);
+                BoardPanel.Refresh();
+            }
 
             MoveStartAllowed = false;
         }
@@ -256,4 +286,7 @@ namespace PerfectChess
             BoardView.StartMove(S, EmptyAvailibleSquares, EnemyAvailibleSquares);
         }
     }
+
+
+
 }

@@ -11,7 +11,7 @@ namespace PerfectChess
     public partial class Position
     {
         
-        public Position() : this(InitialPieces, White, 1111)
+        public Position() : this(InitialPieces, White, 0b1111)
         {
         }
         public Position(int[] Pieces, int ToMove, int CastlingRights, int EnPassant = InvalidSquare)

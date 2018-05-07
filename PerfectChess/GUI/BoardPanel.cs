@@ -166,6 +166,11 @@ namespace PerfectChess
     /// </summary>
     public struct Square
     {
+        public static Square Get(int index)
+        {
+            //return Square.Get(index % 8 + 1, index / 8 + 1);
+            return _ALL[index];
+        }
         public static Square Get(string Square)
         {
             if (Square.Length != 2) throw new ArgumentException();
@@ -202,15 +207,16 @@ namespace PerfectChess
             }
             if (!Char.IsDigit(Lower[1]) || (Char.GetNumericValue(Lower[1]) > 8) || (Char.GetNumericValue(Lower[1]) < 1)) throw new ArgumentException();
             int Rank = (int)Char.GetNumericValue(Lower[1]);
-            return new Square(File, Rank);
+            return Get(File, Rank);//new Square(File, Rank);
         }
         public static Square Get(Files File, int Rank)
         {
-            return new Square(File, Rank);
+            //return new Square(File, Rank);
+            return Get((int)File, Rank);//_ALL[(int)File + Rank * 8];
         }
         public static Square Get(int File, int Rank)
         {
-            return new Square(File, Rank);
+            return _ALL[(File - 1) + (Rank - 1) * 8];//new Square(File, Rank);
         }
 
         private Square(Files File, int Rank)
@@ -236,16 +242,16 @@ namespace PerfectChess
 
         static Square()
         {
-            List<Square> Squares = new List<Square>();
-            foreach (Files F in Enum.GetValues(typeof(Files)))
-                for (int i = 1; i <= 8; i++)
-                    Squares.Add(new Square(F, i));
-            AllSquares = new ReadOnlyCollection<Square>(Squares);
+            Square[] All = new Square[64];
+            for (int i = 0; i < 64; i++)
+                All[i] = new Square(i % 8 + 1, i / 8 + 1);
+            _ALL = All;
         }
-        public static readonly ReadOnlyCollection<Square> AllSquares;
+        private static readonly Square[] _ALL;
 
         public int X => (int)File - 1;
         public int Y => Rank - 1;
+        public int Index => X + 8 * Y;
 
         public static bool operator ==(Square S1, Square S2)
         {
@@ -296,5 +302,30 @@ namespace PerfectChess
     public class Game
     {
         public enum Colors { White = 0, Black = 1 }
+    }
+
+
+    public static class ViewModelConnector
+    {
+        public static Dictionary<int, Image> PieceImage = new Dictionary<int, Image>
+        {
+            { PerfectChess.Color.White | PerfectChess.Piece.Pawn, ViewSettings.WHITE_PAWN },
+            { PerfectChess.Color.White | PerfectChess.Piece.Knight, ViewSettings.WHITE_KNIGHT },
+            { PerfectChess.Color.White | PerfectChess.Piece.Bishop, ViewSettings.WHITE_BISHOP },
+            { PerfectChess.Color.White | PerfectChess.Piece.Rook, ViewSettings.WHITE_ROOK },
+            { PerfectChess.Color.White | PerfectChess.Piece.Queen, ViewSettings.WHITE_QUEEN },
+            { PerfectChess.Color.White | PerfectChess.Piece.King, ViewSettings.WHITE_KING },
+            { PerfectChess.Color.Black | PerfectChess.Piece.Pawn, ViewSettings.BLACK_PAWN },
+            { PerfectChess.Color.Black | PerfectChess.Piece.Knight, ViewSettings.BLACK_KNIGHT },
+            { PerfectChess.Color.Black | PerfectChess.Piece.Bishop, ViewSettings.BLACK_BISHOP },
+            { PerfectChess.Color.Black | PerfectChess.Piece.Rook, ViewSettings.BLACK_ROOK },
+            { PerfectChess.Color.Black | PerfectChess.Piece.Queen, ViewSettings.BLACK_QUEEN },
+            { PerfectChess.Color.Black | PerfectChess.Piece.King, ViewSettings.BLACK_KING }
+        };
+        public static Dictionary<int, System.Drawing.Color> RealColor = new Dictionary<int, System.Drawing.Color>
+        {
+            { PerfectChess.Color.White, ViewSettings.WHITE_SQUARE_COLOR },
+            { PerfectChess.Color.Black, ViewSettings.BLACK_SQUARE_COLOR }
+        };
     }
 }
