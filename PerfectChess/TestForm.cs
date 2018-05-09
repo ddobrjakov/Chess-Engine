@@ -28,6 +28,10 @@ namespace PerfectChess
             //TestBit();
             //TestPos();
         }
+        public void Reset()
+        {
+            Box.Text = "";
+        }
         public void ShowStats(string Text)
         {
             Box.Text += Text + "\n";

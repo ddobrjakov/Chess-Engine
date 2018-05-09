@@ -15,7 +15,7 @@ namespace PerfectChess
         public Presenter(Form1 BoardView)
         {
             Test = new TestForm();
-            Test.Show();
+            //Test.Show();
 
             this.Pos = new Position();
             this.BoardView = BoardView;
@@ -67,7 +67,7 @@ namespace PerfectChess
                 Pos.Make(MoveToMake);
                 BoardView.FinishMove(MovesWhere.First());
 
-                Test.ShowStats(Pos);
+                //Test.ShowStats(Pos);
 
                 if (Pos.Check)
                 {
@@ -76,7 +76,7 @@ namespace PerfectChess
                 }
 
 
-                //StartEngineWork();
+                StartEngineWork();
             }
             else { BoardView.CancelMove(); }
         }
@@ -105,7 +105,7 @@ namespace PerfectChess
 
             int Move = -1;
             await Task.Run(() => Move = SuperSmartEngine.BestMove(Pos));
-            Move = SuperSmartEngine.BestMove(Pos);
+            //Move = SuperSmartEngine.BestMove(Pos);
             if (Move < 0)
             {
                 BoardView.Stalemate();//throw new Exception("Нет ходов");
