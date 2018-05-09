@@ -32,10 +32,10 @@ namespace PerfectChess
             }
             ColorToMove = ToMove;
 
-            CanCastleShort[White] = (CastlingRights & 0b0001) != 0;
-            CanCastleShort[Black] = (CastlingRights & 0b0010) != 0;
-            CanCastleLong[White] = (CastlingRights & 0b0100) != 0;
-            CanCastleLong[Black] = (CastlingRights & 0b1000) != 0;
+            //CanCastleShort[White] = (CastlingRights & 0b0001) != 0;
+            //CanCastleShort[Black] = (CastlingRights & 0b0010) != 0;
+            //CanCastleLong[White] = (CastlingRights & 0b0100) != 0;
+            //CanCastleLong[Black] = (CastlingRights & 0b1000) != 0;
 
             CastleShortIndex[White] = CastlingRights & 0b0001;
             CastleShortIndex[Black] = (CastlingRights & 0b0010) >> 1;
@@ -47,79 +47,95 @@ namespace PerfectChess
             //this.EnPassantSquare = EnPassant;
             EnPassantHistory.Push(EnPassant);
         }
+
         /// <summary>
         /// Returns a bitboard of all squares containing piece of given type 
         /// </summary>
         private UInt64[] PieceBitboard = new UInt64[15];
+        
+        /// <summary>
+        /// Returns a bitboard with all occupied squares with pieces of either color
+        /// </summary>
+        private UInt64 OccupiedBB;
 
         /// <summary>
         /// Returns piece located on given square
         /// </summary>
         private int[] SquarePiece = new int[64];
 
+        /// <summary>
+        /// Public property to get a piece located on certain square
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
         public int this[int index] => SquarePiece[index];
 
         /// <summary>
-        /// Represents castling king side rights for each color
+        /// Represents castling king side rights for each color (1 means "can castle", 0 and less means no)
         /// </summary>
-        private bool[] CanCastleShort = new bool[2];
-        
-        /// <summary>
-        /// Represents castling queen side rights for each color
-        /// </summary>
-        private bool[] CanCastleLong = new bool[2];
-
         public int[] CastleShortIndex = new int[2];
-        public int[] CastleLongIndex = new int[2];
 
+        /// <summary>
+        /// Represents castling queen side rights for each color (1 means "can castle", 0 and less means no)
+        /// </summary>
+        public int[] CastleLongIndex = new int[2];
 
         /// <summary>
         /// Stores the current side to move
         /// </summary>
-        public int ColorToMove { get; private set; } = 0;
+        public int ColorToMove { get; private set; } = White;
 
         /// <summary>
         /// Stores the square behind enpassant pawn (-1 if none)
         /// </summary>
         public int EnPassantSquare => EnPassantHistory.Peek();
 
+        /// <summary>
+        /// Stores the history of enPassant existance and location at each move
+        /// </summary>
         private Stack<int> EnPassantHistory = new Stack<int>();
-        private int HalfMoves = 0;
+
+        /// <summary>
+        /// Returns the number of moves played since the position creation
+        /// </summary>
+        private int HalfMoves => MoveHistory.Count();
 
         /// <summary>
         /// Stores the history of moves made, particularly needed as the source for unmaking moves
         /// </summary>
         private Stack<int> MoveHistory = new Stack<int>();
+
+        /// <summary>
+        /// Returns the last move played
+        /// </summary>
         public int? LastMove {
             get
             {
                 return MoveHistory.Any() ? MoveHistory.Peek() : (int?)null;
             }
         }
-        private UInt64 WhitePawns => PieceBitboard[White | Pawn];
-        private UInt64 WhiteKnights => PieceBitboard[White | Knight];
-        private UInt64 WhiteBishops => PieceBitboard[White | Bishop];
-        private UInt64 WhiteRooks => PieceBitboard[White | Rook];
-        private UInt64 WhiteQueens => PieceBitboard[White | Queen];
-        private UInt64 WhiteKing => PieceBitboard[White | King];
-        private UInt64 WhitePiecesBB => PieceBitboard[White];
 
-        private UInt64 BlackPawns => PieceBitboard[Black | Pawn];
-        private UInt64 BlackKnights => PieceBitboard[Black | Knight];
-        private UInt64 BlackBishops => PieceBitboard[Black | Bishop];
-        private UInt64 BlackRooks => PieceBitboard[Black | Rook];
-        private UInt64 BlackQueens => PieceBitboard[Black | Queen];
-        private UInt64 BlackKing => PieceBitboard[Black | King];
-        private UInt64 BlackPiecesBB => PieceBitboard[Black];
+        public UInt64 GetPieces(int PieceType)
+        {
+            return PieceBitboard[PieceType];
+        }
+        /*public UInt64 WhitePawns => PieceBitboard[White | Pawn];
+        public UInt64 WhiteKnights => PieceBitboard[White | Knight];
+        public UInt64 WhiteBishops => PieceBitboard[White | Bishop];
+        public UInt64 WhiteRooks => PieceBitboard[White | Rook];
+        public UInt64 WhiteQueens => PieceBitboard[White | Queen];
+        public UInt64 WhiteKing => PieceBitboard[White | King];
+        public UInt64 WhitePiecesBB => PieceBitboard[White];
 
-        private UInt64 OccupiedBB;// => WhitePiecesBB | BlackPiecesBB;
-        //by side
-        
-
-
+        public UInt64 BlackPawns => PieceBitboard[Black | Pawn];
+        public UInt64 BlackKnights => PieceBitboard[Black | Knight];
+        public UInt64 BlackBishops => PieceBitboard[Black | Bishop];
+        public UInt64 BlackRooks => PieceBitboard[Black | Rook];
+        public UInt64 BlackQueens => PieceBitboard[Black | Queen];
+        public UInt64 BlackKing => PieceBitboard[Black | King];
+        public UInt64 BlackPiecesBB => PieceBitboard[Black];*/
+             
         //private UInt64 WhitePawnsAttacks => ((WhitePawns & ~FileABB) << 7) | ((WhitePawns & ~FileHBB) << 9);
-
-
 
         public static int File(int square)
         {
@@ -142,9 +158,6 @@ namespace PerfectChess
             (Black|Pawn), (Black|Pawn),   (Black|Pawn),   (Black|Pawn),  (Black|Pawn), (Black|Pawn),   (Black|Pawn),   (Black|Pawn),
             (Black|Rook), (Black|Knight), (Black|Bishop), (Black|Queen), (Black|King), (Black|Bishop), (Black|Knight), (Black|Rook)
         };
-
-
-
 
         public bool IsAttacked(int Color, int Square)
         {
@@ -174,8 +187,19 @@ namespace PerfectChess
             return IsAttacked(Color, BitOperations.OnlyBitIndex(PieceBitboard[Color | King]));
         }
 
+        public bool Check => IsInCheck(ColorToMove);
+        public bool Checkmate => Check && !LegalMoves().Any();
 
 
+        public Position DeepCopy()
+        {
+            Position Copied = new Position();
+            List<int> MovesInOrder = MoveHistory.ToList();
+            MovesInOrder.Reverse();
+            foreach (int Move in MovesInOrder)
+                Copied.Make(Move);
+            return Copied;
+        }
         public override string ToString()
         {
             string Res = string.Empty;

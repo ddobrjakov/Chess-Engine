@@ -13,8 +13,8 @@ namespace PerfectChess
         public List<int> LegalMoves()
         {
             List<int> moves = new List<int>();
-            moves = GenerateCastleMoves(moves);
-            moves = GenerateEnPassantMoves(moves);
+            GenerateCastleMoves(moves);
+            GenerateEnPassantMoves(moves);
 
             //Captures
             GeneratePawnCaptures(moves);
@@ -26,16 +26,16 @@ namespace PerfectChess
 
 
             //Silent Moves
-            moves = GeneratePawnMoves(moves);
-            moves = GenerateKnightMoves(moves);
-            moves = GenerateBishopMoves(moves);
-            moves = GenerateRookMoves(moves);
-            moves = GenerateQueenMoves(moves);
-            moves = GenerateKingMoves(moves);
+            GeneratePawnMoves(moves);
+            GenerateKnightMoves(moves);
+            GenerateBishopMoves(moves);
+            GenerateRookMoves(moves);
+            GenerateQueenMoves(moves);
+            GenerateKingMoves(moves);
 
             return moves;
         }
-        private List<int> GenerateCastleMoves(List<int> moves)
+        private void GenerateCastleMoves(List<int> moves)
         {
             if (!IsInCheck(ColorToMove))
             {
@@ -49,9 +49,8 @@ namespace PerfectChess
                     if (!IsAttacked(ColorToMove, 5 + preIndex) && !IsAttacked(ColorToMove, 6 + preIndex))
                         moves.Add(Move.Create(4 + preIndex, 6 + preIndex, ColorToMove | King, None, SpecCastling));
             }
-            return moves;
         }
-        private List<int> GenerateEnPassantMoves(List<int> moves)
+        private void GenerateEnPassantMoves(List<int> moves)
         {
             if (EnPassantSquare != InvalidSquare)
             {
@@ -79,7 +78,6 @@ namespace PerfectChess
                     OccupiedBB ^= (1UL << FromSquare) | (1UL << EnPassantSquare);
                 }
             }
-            return moves;
         }
 
         private bool IsLegal(int SquareFrom, int SquareTo)
@@ -193,7 +191,7 @@ namespace PerfectChess
 
 
 
-        private List<int> GeneratePawnMoves(List<int> moves)
+        private void GeneratePawnMoves(List<int> moves)
         {
             int ourColor = ColorToMove;
             UInt64 ourPieces = PieceBitboard[ourColor | Pawn];
@@ -236,7 +234,6 @@ namespace PerfectChess
                     }
                 }
             }
-            return moves;
         }
         /*private void GeneratePawnMoves(List<int> moves)
         {
@@ -289,7 +286,7 @@ namespace PerfectChess
                 }
             }
         }*/
-        private List<int> GenerateKnightMoves(List<int> moves)
+        private void GenerateKnightMoves(List<int> moves)
         {
             int ourColor = ColorToMove;
             UInt64 ourPieces = PieceBitboard[ourColor | Knight];
@@ -313,9 +310,8 @@ namespace PerfectChess
                     }
                 }
             }
-            return moves;
         }
-        private List<int> GenerateBishopMoves(List<int> moves)
+        private void GenerateBishopMoves(List<int> moves)
         {
             int ourColor = ColorToMove;
             UInt64 ourPieces = PieceBitboard[ourColor | Bishop];
@@ -339,9 +335,8 @@ namespace PerfectChess
                     }
                 }
             }
-            return moves;
         }
-        private List<int> GenerateRookMoves(List<int> moves)
+        private void GenerateRookMoves(List<int> moves)
         {
             int ourColor = ColorToMove;
             UInt64 ourPieces = PieceBitboard[ourColor | Rook];
@@ -365,9 +360,8 @@ namespace PerfectChess
                     }
                 }
             }
-            return moves;
         }
-        private List<int> GenerateQueenMoves(List<int> moves)
+        private void GenerateQueenMoves(List<int> moves)
         {
             int ourColor = ColorToMove;
             UInt64 ourPieces = PieceBitboard[ourColor | Queen];
@@ -391,9 +385,8 @@ namespace PerfectChess
                     }
                 }
             }
-            return moves;
         }
-        private List<int> GenerateKingMoves(List<int> moves)
+        private void GenerateKingMoves(List<int> moves)
         {
             int ourColor = ColorToMove;
             UInt64 ourPieces = PieceBitboard[ourColor | King];
@@ -441,7 +434,6 @@ namespace PerfectChess
                     }
                 }
             }
-            return moves;
         }
     }
 }

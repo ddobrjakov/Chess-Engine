@@ -86,7 +86,7 @@ namespace PerfectChess
         /// </summary>
         /// <param name="b"></param>
         /// <returns></returns>
-        public static int bitboard_popcount(UInt64 b)
+        public static int PopCount(UInt64 b)
         {
             int cnt = 0;
             while (b != 0)

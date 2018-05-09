@@ -50,6 +50,7 @@
     <Compile Include="BitOperations.cs" />
     <Compile Include="Core\Color.cs" />
     <Compile Include="Core\Move.cs" />
+    <Compile Include="Engine.cs" />
     <Compile Include="GUI\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -60,6 +61,7 @@
     <Compile Include="GUI\BoardPanel.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="GUI\Presenter.cs" />
     <Compile Include="Position\MakeUnmake.cs" />
     <Compile Include="Position\MoveGeneration.cs" />
     <Compile Include="Position\Position.cs" />
@@ -71,6 +73,9 @@
     <Compile Include="TestForm.Designer.cs">
       <DependentUpon>TestForm.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="GUI\Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

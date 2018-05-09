@@ -50,7 +50,7 @@
             this.button1.TabIndex = 1;
             this.button1.Text = "Отменить ход";
             this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.button1.Click += new System.EventHandler(this.undoButton_Click);
             // 
             // Form1
             // 
@@ -60,7 +60,7 @@
             this.Controls.Add(this.button1);
             this.Controls.Add(this.TestOutput);
             this.Name = "Form1";
-            this.Text = "Chess Game";
+            this.Text = "PerfectChess Engine";
             this.ResumeLayout(false);
 
         }
