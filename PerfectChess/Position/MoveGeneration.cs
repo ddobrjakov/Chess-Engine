@@ -207,7 +207,7 @@ namespace PerfectChess
                 UInt64 moveBitboard = ~OccupiedBB & (1UL << ToSquare); //0 if destination square is occupied
 
                 //Two square advance
-                if (moveBitboard != 0 && ((1UL << FromSquare) & Bitboard.InitialPawnPositionsBB) != 0)
+                if (moveBitboard != 0 && (Rank(FromSquare) == 1 + 5 * ColorToMove))
                     moveBitboard |= ~OccupiedBB & (1UL << (FromSquare + 16 - 32 * ColorToMove)); //0 => doesn't change if destination square's occupied
 
                 //Captures

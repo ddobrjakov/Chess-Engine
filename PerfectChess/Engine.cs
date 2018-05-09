@@ -46,9 +46,6 @@ namespace PerfectChess
         }
         private int Evaluate()
         {
-            //int WhiteMaterial = 0;
-            //int BlackMaterial = 0;
-
             int[] value = new int[2];
             for (int Color = White; Color <= Black; Color++)
             {
@@ -58,6 +55,8 @@ namespace PerfectChess
                 value[Color] += EngineConsts.RookCost * BitOperations.PopCount(Pos.GetPieces(Piece.Rook | Color));
                 value[Color] += EngineConsts.QueenCost * BitOperations.PopCount(Pos.GetPieces(Piece.Queen | Color));
                 value[Color] += EngineConsts.KingCost * BitOperations.PopCount(Pos.GetPieces(Piece.King | Color));
+                if (Pos.CastleLongIndex[Color] != 1 && Pos.CastleShortIndex[Color] != 1)
+                    value[Color] -= EngineConsts.CastleAbilityCost;
             }
 
             return value[White] - value[Black];//WhiteMaterial - BlackMaterial;
@@ -107,7 +106,12 @@ namespace PerfectChess
                     Pos.UnMake();
                 }
             }
-            bestmove = BestMoves[alpha][R.Next(BestMoves[alpha].Count)];
+
+            try
+            {
+                bestmove = BestMoves[alpha][R.Next(BestMoves[alpha].Count)];
+            }
+            catch { this.IsThinking = false; return -1; /*throw*/ }
 
             this.IsThinking = false;
             return bestmove;
@@ -123,5 +127,7 @@ namespace PerfectChess
         public const int RookCost = 500;
         public const int QueenCost = 900;
         public const int KingCost = 0;
+
+        public const int CastleAbilityCost = 50;
     }    
 }

@@ -24,6 +24,14 @@ namespace PerfectChess
             this.BoardView.SquareTapped += BoardView_SquareTapped;
             this.BoardView.AskForFinish += BoardView_AskForFinish;
             this.BoardView.AskForUndo += BoardView_AskForUndo;
+            this.BoardView.WantNewGame += BoardView_WantNewGame;
+        }
+
+        private void BoardView_WantNewGame(object sender, EventArgs e)
+        {
+            this.Pos = new Position();
+            this.SuperSmartEngine = new Engine();
+            BoardView.SetStartPos(Pos);
         }
 
         private void BoardView_SquareTapped(object sender, Square S)
@@ -75,6 +83,7 @@ namespace PerfectChess
         private void BoardView_AskForUndo(object sender, EventArgs e)
         {
             if (SuperSmartEngine.IsThinking) return;
+            if (!Pos.LegalMoves().Any()) return;
 
             for (int i = 0; i <= 1; i++)
             {
@@ -96,8 +105,13 @@ namespace PerfectChess
 
             int Move = -1;
             await Task.Run(() => Move = SuperSmartEngine.BestMove(Pos));
-
-            if (Move < 0) throw new Exception();
+            Move = SuperSmartEngine.BestMove(Pos);
+            if (Move < 0)
+            {
+                BoardView.Stalemate();//throw new Exception("Нет ходов");
+                BoardView.Text = "PerfectChess Engine";
+                return;
+            }
 
             Pos.Make(Move);
             BoardView.PerformComputerMove(Move);

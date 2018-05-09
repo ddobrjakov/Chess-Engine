@@ -75,6 +75,8 @@ namespace PerfectChess
         private Bitmap BackgroundWhileMoving;
         private Square MovingFromSquare;
 
+        private string _cachedText = String.Empty;
+
         //Starting the move using the mouse
         public event EventHandler<Square> SquareTapped;
         private void BoardPanel_MouseDown(object sender, MouseEventArgs e)
@@ -105,6 +107,8 @@ namespace PerfectChess
             Bitmap FROM_IMAGE = new Bitmap(BoardPanel.GetSquareImage(FROM));
             BoardPanel.ResetSquare(FROM);
 
+
+            _cachedText = TestOutput.Text;
             TestOutput.ForeColor = SystemColors.WindowText;
             //Демонстрация тихих ходов
             TestOutput.Text = "Silent moves: ";
@@ -193,6 +197,8 @@ namespace PerfectChess
             BoardPanel.BackgroundImage = PreSavedBackground;
             BoardPanel.Invalidate();
 
+            TestOutput.Text = _cachedText;
+
             MoveStartAllowed = false;
         }
 
@@ -233,6 +239,8 @@ namespace PerfectChess
 
             BoardPanel.Invalidate(true);
             BoardPanel.Refresh();
+
+            TestOutput.Text = String.Empty;
         }
 
         //Does the engine move
@@ -301,9 +309,35 @@ namespace PerfectChess
             TestOutput.ForeColor = System.Drawing.Color.Red;
             TestOutput.Text += "\nCheck!\n";
         }
+        public void Stalemate()
+        {
+            TestOutput.ForeColor = System.Drawing.Color.Green;
+            TestOutput.Text += "\nStalemate! It's a draw\n";
+        }
         public void Title(string Text)
         {
             this.Text = Text;
+        }
+
+        public event EventHandler WantNewGame;
+        private void newGameButton_Click(object sender, EventArgs e)
+        {
+            WantNewGame?.Invoke(this, EventArgs.Empty);
+        }
+        public void SetStartPos(Position P)
+        {
+            for (int i = 0; i < 64; i++)
+            {
+                Square S = Square.Get(i);
+                BoardPanel.ResetSquare(S);
+                if (P[i] != 0) BoardPanel.SetSquareImage(S, ViewModelConnector.PieceImage[P[i]]);
+            }
+            BoardPanel.Refresh();
+            TestOutput.Text = "";
+
+            MoveStartAllowed = false;
+            MousePressed = false;
+            ImageMoving = null;
         }
     }
 

@@ -30,6 +30,7 @@
         {
             this.TestOutput = new System.Windows.Forms.RichTextBox();
             this.button1 = new System.Windows.Forms.Button();
+            this.newGameButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // TestOutput
@@ -46,17 +47,28 @@
             // 
             this.button1.Location = new System.Drawing.Point(809, 55);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(282, 55);
+            this.button1.Size = new System.Drawing.Size(205, 55);
             this.button1.TabIndex = 1;
             this.button1.Text = "Отменить ход";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.undoButton_Click);
+            // 
+            // newGameButton
+            // 
+            this.newGameButton.Location = new System.Drawing.Point(1052, 55);
+            this.newGameButton.Name = "newGameButton";
+            this.newGameButton.Size = new System.Drawing.Size(218, 55);
+            this.newGameButton.TabIndex = 2;
+            this.newGameButton.Text = "Новая игра";
+            this.newGameButton.UseVisualStyleBackColor = true;
+            this.newGameButton.Click += new System.EventHandler(this.newGameButton_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1436, 744);
+            this.Controls.Add(this.newGameButton);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.TestOutput);
             this.Name = "Form1";
@@ -69,6 +81,7 @@
 
         private System.Windows.Forms.RichTextBox TestOutput;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button newGameButton;
     }
 }
 

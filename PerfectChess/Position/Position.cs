@@ -189,7 +189,7 @@ namespace PerfectChess
 
         public bool Check => IsInCheck(ColorToMove);
         public bool Checkmate => Check && !LegalMoves().Any();
-
+        public bool Stalemate => !LegalMoves().Any() && !Check;
 
         public Position DeepCopy()
         {
