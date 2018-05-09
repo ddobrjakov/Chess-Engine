@@ -37,7 +37,15 @@ namespace PerfectChess
             CanCastleLong[White] = (CastlingRights & 0b0100) != 0;
             CanCastleLong[Black] = (CastlingRights & 0b1000) != 0;
 
-            this.EnPassantSquare = EnPassant;
+            CastleShortIndex[White] = CastlingRights & 0b0001;
+            CastleShortIndex[Black] = (CastlingRights & 0b0010) >> 1;
+            CastleLongIndex[White] = (CastlingRights & 0b0100) >> 2;
+            CastleLongIndex[Black] = (CastlingRights & 0b1000) >> 3;
+
+
+
+            //this.EnPassantSquare = EnPassant;
+            EnPassantHistory.Push(EnPassant);
         }
         /// <summary>
         /// Returns a bitboard of all squares containing piece of given type 
@@ -61,6 +69,10 @@ namespace PerfectChess
         /// </summary>
         private bool[] CanCastleLong = new bool[2];
 
+        private int[] CastleShortIndex = new int[2];
+        private int[] CastleLongIndex = new int[2];
+
+
         /// <summary>
         /// Stores the current side to move
         /// </summary>
@@ -69,8 +81,21 @@ namespace PerfectChess
         /// <summary>
         /// Stores the square behind enpassant pawn (-1 if none)
         /// </summary>
-        private int EnPassantSquare;
+        private int EnPassantSquare => EnPassantHistory.Peek();
 
+        private Stack<int> EnPassantHistory = new Stack<int>();
+        private int HalfMoves = 0;
+
+        /// <summary>
+        /// Stores the history of moves made, particularly needed as the source for unmaking moves
+        /// </summary>
+        private Stack<int> MoveHistory = new Stack<int>();
+        public int? LastMove {
+            get
+            {
+                return MoveHistory.Any() ? MoveHistory.Peek() : (int?)null;
+            }
+        }
         private UInt64 WhitePawns => PieceBitboard[White | Pawn];
         private UInt64 WhiteKnights => PieceBitboard[White | Knight];
         private UInt64 WhiteBishops => PieceBitboard[White | Bishop];

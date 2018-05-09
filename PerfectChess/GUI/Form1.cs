@@ -64,8 +64,9 @@ namespace PerfectChess
         public BoardPanel BoardPanel { get; private set; }
         public void button1_Click(object sender, EventArgs e)
         {
-
+            AskForUndo?.Invoke(this, EventArgs.Empty);
         }
+        public event EventHandler AskForUndo;
 
         private Rectangle R = new Rectangle(0, 0, ViewSettings.SQUARESIZE, ViewSettings.SQUARESIZE);
         private bool MoveStartAllowed = false;
@@ -233,6 +234,59 @@ namespace PerfectChess
 
             MoveStartAllowed = false;
         }
+
+        public void UndoMove(int MoveToUndo)
+        {
+            Square TO = Square.Get(PerfectChess.Move.ToSquare(MoveToUndo));
+            Square FROM = Square.Get(PerfectChess.Move.FromSquare(MoveToUndo));
+
+            if (Castling(MoveToUndo))
+            {
+                Square ROOK_TO = Square.Get((PerfectChess.Move.FromSquare(MoveToUndo) + PerfectChess.Move.ToSquare(MoveToUndo)) / 2);
+                Square ROOK_FROM = Square.Get((PerfectChess.Move.ToSquare(MoveToUndo) > PerfectChess.Move.FromSquare(MoveToUndo)) 
+                    ? PerfectChess.Move.FromSquare(MoveToUndo) + 3 : PerfectChess.Move.FromSquare(MoveToUndo) - 4);
+
+                BoardPanel.ResetSquare(ROOK_FROM);
+                BoardPanel.SetSquareImage(ROOK_FROM, BoardPanel.GetSquareImage(ROOK_TO));
+                BoardPanel.ResetSquare(ROOK_TO);
+                BoardPanel.Invalidate();
+
+                BoardPanel.Invalidate(true);
+                BoardPanel.Refresh();
+            }
+
+            if (Promotion(MoveToUndo))
+            {
+                //BoardPanel.SetSquareImage(FROM, ViewModelConnector.PieceImage[FROM_PIECE(MoveToUndo)]);
+                BoardPanel.ResetSquare(TO);
+                if (PerfectChess.Move.ToPiece(MoveToUndo) != 0)
+                    BoardPanel.SetSquareImage(TO, ViewModelConnector.PieceImage[PerfectChess.Move.FromPiece(MoveToUndo)]);
+                BoardPanel.Invalidate();
+
+                BoardPanel.Invalidate(true);
+                BoardPanel.Refresh();
+            }
+
+            if (EnPassant(MoveToUndo))
+            {
+                Square CapturedPawnSquare = Square.Get(PerfectChess.Move.ToSquare(MoveToUndo) - 8 + 16 * (PerfectChess.Move.FromPiece(MoveToUndo) & Color.Mask));
+                BoardPanel.SetSquareImage(CapturedPawnSquare, ViewModelConnector.PieceImage[Piece.Pawn | ((1 - PerfectChess.Move.FromPiece(MoveToUndo)) & Color.Mask)]);
+            }
+
+            BoardPanel.ResetSquare(FROM);
+            BoardPanel.SetSquareImage(FROM, BoardPanel.GetSquareImage(TO));
+            BoardPanel.ResetSquare(TO);
+
+            if (PerfectChess.Move.ToPiece(MoveToUndo) != 0)
+            {
+                BoardPanel.SetSquareImage(TO, ViewModelConnector.PieceImage[PerfectChess.Move.ToPiece(MoveToUndo)]);
+            }
+
+            BoardPanel.Invalidate();
+
+            BoardPanel.Invalidate(true);
+            BoardPanel.Refresh();
+        }
     }
 
 
@@ -248,6 +302,19 @@ namespace PerfectChess
 
             this.BoardView.SquareTapped += BoardView_SquareTapped;
             this.BoardView.AskForFinish += BoardView_AskForFinish;
+            this.BoardView.AskForUndo += BoardView_AskForUndo;
+        }
+
+        private void BoardView_AskForUndo(object sender, EventArgs e)
+        {
+            int? MoveToUndo = Pos.LastMove;
+            if (MoveToUndo == null)
+            {
+                //No moves handler
+                return;
+            }
+            Pos.UnMake();
+            BoardView.UndoMove((int)MoveToUndo);
         }
 
         private void BoardView_AskForFinish(object sender, Tuple<Square, Square> e)
@@ -285,6 +352,11 @@ namespace PerfectChess
             }
             BoardView.StartMove(S, EmptyAvailibleSquares, EnemyAvailibleSquares);
         }
+
+
+
+
+
     }
 
 

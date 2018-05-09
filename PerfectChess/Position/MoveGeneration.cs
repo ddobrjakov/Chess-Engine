@@ -41,11 +41,11 @@ namespace PerfectChess
             {
                 int preIndex = 56 * ColorToMove;
 
-                if (CanCastleLong[ColorToMove] && (SquarePiece[1 + preIndex] | SquarePiece[2 + preIndex] | SquarePiece[3 + preIndex]) == None)
+                if (CastleLongIndex[ColorToMove] == 1/*CanCastleLong[ColorToMove]*/ && (SquarePiece[1 + preIndex] | SquarePiece[2 + preIndex] | SquarePiece[3 + preIndex]) == None)
                     if (!IsAttacked(ColorToMove, 3 + preIndex) && !IsAttacked(ColorToMove, 2 + preIndex))
                         moves.Add(Move.Create(4 + preIndex, 2 + preIndex, ColorToMove | King, None, SpecCastling));
 
-                if (CanCastleShort[ColorToMove] && (SquarePiece[5 + preIndex] | SquarePiece[6 + preIndex]) == None)
+                if (CastleShortIndex[ColorToMove] == 1/*CanCastleShort[ColorToMove]*/ && (SquarePiece[5 + preIndex] | SquarePiece[6 + preIndex]) == None)
                     if (!IsAttacked(ColorToMove, 5 + preIndex) && !IsAttacked(ColorToMove, 6 + preIndex))
                         moves.Add(Move.Create(4 + preIndex, 6 + preIndex, ColorToMove | King, None, SpecCastling));
             }
