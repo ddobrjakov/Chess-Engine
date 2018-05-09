@@ -26,9 +26,28 @@ namespace PerfectChess
             //TestRookAttacks();
             //TestBishopAttacks();
             //TestBit();
-            TestPos();
+            //TestPos();
         }
+        public void ShowStats(string Text)
+        {
+            Box.Text += Text + "\n";
+        }
+        public void ShowStats(Position P)
+        {
+            Box.Clear();
+            if (P.LastMove is null) Box.Text += "No moves\n";
+            else Box.Text += "Last move: " + PerfectChess.Move.Details((int)P.LastMove) + "\n";
 
+            Box.Text += "White Short: " + P.CastleShortIndex[White] + "\n";
+            Box.Text += "White Long:  " + P.CastleLongIndex[White] + "\n";
+            Box.Text += "Black Short: " + P.CastleShortIndex[Black] + "\n";
+            Box.Text += "Black Long:  " + P.CastleLongIndex[Black] + "\n";
+
+            int EnSquare = P.EnPassantSquare;
+            char filestr = (char)((int)'A' + EnSquare % 8);
+            string squarestr = filestr + (EnSquare / 8 + 1).ToString();
+            Box.Text += "EnPassant Square: " + squarestr;
+        }
         private void TestLS1BMS1B()
         {
             UInt64 ToCheck = 0b1000000010000000100000001000000010000000100000001000000010000000;

@@ -19,8 +19,8 @@ namespace PerfectChess
         {
             InitializeComponent();
 
-            Form Test = new TestForm();
-            Test.Show();
+            //Form Test = new TestForm();
+            //Test.Show();
 
 
             this.BackColor = ViewSettings.BACKGROUND_COLOR;
@@ -295,8 +295,12 @@ namespace PerfectChess
         private Form1 BoardView;
         private Position Pos;
 
+        private TestForm Test;
         public Presenter(Form1 BoardView)
         {
+            Test = new TestForm();
+            Test.Show();
+
             Pos = new Position();
             this.BoardView = BoardView;
 
@@ -315,6 +319,7 @@ namespace PerfectChess
             }
             Pos.UnMake();
             BoardView.UndoMove((int)MoveToUndo);
+            Test.ShowStats(Pos);
         }
 
         private void BoardView_AskForFinish(object sender, Tuple<Square, Square> e)
@@ -330,6 +335,8 @@ namespace PerfectChess
 
                 Pos.Make(MoveToMake);
                 BoardView.FinishMove(MovesWhere.First());
+
+                Test.ShowStats(Pos);
             }
             else { BoardView.CancelMove(); }
         }

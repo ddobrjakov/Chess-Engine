@@ -32,6 +32,9 @@ namespace PerfectChess
 
             if (CastleShortIndex[ColorToMove] <= 0) CastleShortIndex[ColorToMove]--;
             if (CastleLongIndex[ColorToMove] <= 0) CastleLongIndex[ColorToMove]--;
+            if (CastleShortIndex[1 - ColorToMove] <= 0) CastleShortIndex[1 - ColorToMove]--;
+            if (CastleLongIndex[1 - ColorToMove] <= 0) CastleLongIndex[1 - ColorToMove]--;
+
             //Resetting castling rights if king or rook moves         
             if ((fromPiece & Piece.Mask) == Piece.King)
             {
@@ -69,6 +72,10 @@ namespace PerfectChess
             {
                 PieceBitboard[toPiece] ^= 1UL << toSquare;
                 PieceBitboard[toPiece & Color.Mask] ^= 1UL << toSquare;
+
+                int EnemyLeftRookIndex = 56 * (1 - ColorToMove);
+                if (toSquare == EnemyLeftRookIndex && toPiece == Piece.Rook && CastleShortIndex[1-ColorToMove] == 1) CastleShortIndex[1-ColorToMove]--;
+                else if (toSquare == EnemyLeftRookIndex + 7 && toPiece == Piece.Rook && CastleLongIndex[1-ColorToMove] == 1) CastleShortIndex[1-ColorToMove]--;
             }
 
             //Castling
@@ -160,6 +167,10 @@ namespace PerfectChess
             {
                 PieceBitboard[toPiece] ^= 1UL << toSquare;
                 PieceBitboard[toPiece & Color.Mask] ^= 1UL << toSquare;
+
+                int EnemyLeftRookIndex = 56 * ColorMadeMove;
+                if (toSquare == EnemyLeftRookIndex && toPiece == Piece.Rook && CastleShortIndex[1 - ColorMadeMove] <= 0) CastleShortIndex[1 - ColorMadeMove]++;
+                else if (toSquare == EnemyLeftRookIndex + 7 && toPiece == Piece.Rook && CastleLongIndex[1 - ColorMadeMove] <= 0) CastleShortIndex[1 - ColorMadeMove]++;
             }
             else
             {
@@ -168,6 +179,8 @@ namespace PerfectChess
 
             if (CastleShortIndex[ColorMadeMove] <= 0) CastleShortIndex[ColorMadeMove]++;
             if (CastleLongIndex[ColorMadeMove] <= 0) CastleLongIndex[ColorMadeMove]++;
+            if (CastleShortIndex[1 - ColorMadeMove] <= 0) CastleShortIndex[1 - ColorMadeMove]++;
+            if (CastleLongIndex[1 - ColorMadeMove] <= 0) CastleLongIndex[1 - ColorMadeMove]++;
 
             //Castling Back
             if (Move.Castling(MoveToUnmake))
@@ -226,9 +239,6 @@ namespace PerfectChess
                 PieceBitboard[Piece.Pawn | ColorToMove] ^= enPassantVictimBitboard;
                 PieceBitboard[ColorToMove] ^= enPassantVictimBitboard;
                 SquarePiece[EnPassantVictimSquare] = Piece.Pawn | ColorToMove;
-
-                //EnPassantSquare = toSquare;
-                //EnPassantHistory.Push(toSquare);
             }
 
             ColorToMove = ColorMadeMove;

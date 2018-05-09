@@ -69,8 +69,8 @@ namespace PerfectChess
         /// </summary>
         private bool[] CanCastleLong = new bool[2];
 
-        private int[] CastleShortIndex = new int[2];
-        private int[] CastleLongIndex = new int[2];
+        public int[] CastleShortIndex = new int[2];
+        public int[] CastleLongIndex = new int[2];
 
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace PerfectChess
         /// <summary>
         /// Stores the square behind enpassant pawn (-1 if none)
         /// </summary>
-        private int EnPassantSquare => EnPassantHistory.Peek();
+        public int EnPassantSquare => EnPassantHistory.Peek();
 
         private Stack<int> EnPassantHistory = new Stack<int>();
         private int HalfMoves = 0;
