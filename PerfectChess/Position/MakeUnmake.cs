@@ -38,22 +38,22 @@ namespace PerfectChess
             //Resetting castling rights if king or rook moves         
             if ((fromPiece & Piece.Mask) == Piece.King)
             {
-                CanCastleLong[ColorToMove] = false;
-                CanCastleShort[ColorToMove] = false;
+                //CanCastleLong[ColorToMove] = false;
+                //CanCastleShort[ColorToMove] = false;
 
                 if (CastleShortIndex[ColorToMove] == 1) CastleShortIndex[ColorToMove]--;
                 if (CastleLongIndex[ColorToMove] == 1) CastleLongIndex[ColorToMove]--;
             }
             else if ((fromPiece & Piece.Mask) == Piece.Rook)
             {
-                if (File(fromSquare) == 7)
+                if (fromSquare == 56 * ColorToMove + 7)
                 {
-                    CanCastleShort[ColorToMove] = false;
+                    //CanCastleShort[ColorToMove] = false;
                     if (CastleShortIndex[ColorToMove] == 1) CastleShortIndex[ColorToMove]--;
                 }
-                else
+                else if (fromSquare == 56 * ColorToMove)
                 {
-                    CanCastleLong[ColorToMove] = false;
+                    //CanCastleLong[ColorToMove] = false;
                     if (CastleLongIndex[ColorToMove] == 1) CastleLongIndex[ColorToMove]--;
                 }
             }

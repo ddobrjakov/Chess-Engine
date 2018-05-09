@@ -177,7 +177,6 @@ namespace PerfectChess
             }
 
 
-
             int[] Pieces2 =
             {     
                 8, 0, 0, 00, 12, 6, 4, 8,
