@@ -74,8 +74,10 @@ namespace PerfectChess
                 PieceBitboard[toPiece & Color.Mask] ^= 1UL << toSquare;
 
                 int EnemyLeftRookIndex = 56 * (1 - ColorToMove);
-                if (toSquare == EnemyLeftRookIndex && toPiece == Piece.Rook && CastleShortIndex[1-ColorToMove] == 1) CastleShortIndex[1-ColorToMove]--;
-                else if (toSquare == EnemyLeftRookIndex + 7 && toPiece == Piece.Rook && CastleLongIndex[1-ColorToMove] == 1) CastleShortIndex[1-ColorToMove]--;
+                if (toSquare == EnemyLeftRookIndex + 7 && (toPiece & Piece.Mask) == Piece.Rook && CastleShortIndex[1-ColorToMove] == 1) CastleShortIndex[1-ColorToMove]--;
+                else if (toSquare == EnemyLeftRookIndex &&
+                    (toPiece & Piece.Mask) == Piece.Rook && CastleLongIndex[1-ColorToMove] == 1)
+                    CastleLongIndex[1-ColorToMove]--;
             }
 
             //Castling

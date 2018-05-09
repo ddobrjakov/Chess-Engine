@@ -51,6 +51,7 @@
     <Compile Include="Core\Color.cs" />
     <Compile Include="Core\Move.cs" />
     <Compile Include="Engine.cs" />
+    <Compile Include="Evaluation.cs" />
     <Compile Include="GUI\Form1.cs">
       <SubType>Form</SubType>
     </Compile>

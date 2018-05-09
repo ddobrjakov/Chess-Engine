@@ -16,6 +16,16 @@ namespace PerfectChess
             GenerateCastleMoves(moves);
             GenerateEnPassantMoves(moves);
 
+            //var F = System.IO.File.Create(@"C:\programming\moves.txt");
+            //List<int> Mo = MoveHistory.ToList();
+            //Mo.Reverse();
+            //string text = String.Empty;
+            //for (int i = 0; i < Mo.Count(); i++)
+            //    text += Move.Details(Mo[i]) + "\n";
+            //System.IO.StreamWriter textFile = new System.IO.StreamWriter(@"C:\programming\moves.txt");
+            //textFile.WriteLine(text);
+            //textFile.Close();
+
             //Captures
             GeneratePawnCaptures(moves);
             GenerateKnightCaptures(moves);

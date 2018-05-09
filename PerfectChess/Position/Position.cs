@@ -51,7 +51,7 @@ namespace PerfectChess
         /// <summary>
         /// Returns a bitboard of all squares containing piece of given type 
         /// </summary>
-        private UInt64[] PieceBitboard = new UInt64[15];
+        public readonly UInt64[] PieceBitboard = new UInt64[15];
         
         /// <summary>
         /// Returns a bitboard with all occupied squares with pieces of either color

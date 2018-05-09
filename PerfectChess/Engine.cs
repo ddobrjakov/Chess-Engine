@@ -50,6 +50,14 @@ namespace PerfectChess
             for (int Color = White; Color <= Black; Color++)
             {
                 value[Color] += EngineConsts.PawnCost * BitOperations.PopCount(Pos.GetPieces(Piece.Pawn | Color));
+                UInt64 pawnBitboard = Pos.PieceBitboard[Pawn | Color];
+                while (pawnBitboard != 0)
+                {
+                    int Index = BitOperations.PopLS(ref pawnBitboard);
+                    value[Color] += Evaluation.PawnPositionTable[Color][Index];
+                }
+
+
                 value[Color] += EngineConsts.KnightCost * BitOperations.PopCount(Pos.GetPieces(Piece.Knight | Color));
                 value[Color] += EngineConsts.BishopCost * BitOperations.PopCount(Pos.GetPieces(Piece.Bishop | Color));
                 value[Color] += EngineConsts.RookCost * BitOperations.PopCount(Pos.GetPieces(Piece.Rook | Color));
