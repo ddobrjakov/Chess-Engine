@@ -76,7 +76,7 @@ namespace PerfectChess
                 }
 
 
-                StartEngineWork();
+                //StartEngineWork();
             }
             else { BoardView.CancelMove(); }
         }

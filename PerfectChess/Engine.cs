@@ -121,6 +121,59 @@ namespace PerfectChess
 
             return alpha;
         }
+
+
+
+        private int AlphaBeta(int color, int Depth, int alpha, int beta)
+        {
+            if (Depth == 0) return Evaluate();
+
+            int bestmove;
+            foreach (int move in Pos.LegalMoves())
+            {
+                Pos.Make(move);
+                int Evaluation = -AlphaBeta(1 - color, Depth - 1, -beta, -alpha);
+                Pos.UnMake();
+
+                if (Evaluation >= beta)
+                    return beta;
+
+                if (Evaluation > alpha)
+                {
+                    alpha = Evaluation;
+                    //if (Depth == defaultDepth)
+                    //{
+                    //    bestmove = moves.get(i);
+                    //}
+                }
+            }
+            return alpha;
+        }
+
+
+        private int AlphaBetaMax(int Depth, int alpha, int beta)
+        {
+            if (Depth == 0) return Evaluate();
+            foreach (int Move in Pos.LegalMoves())
+            {
+                Pos.Make(Move);
+                int score = AlphaBetaMin(Depth - 1, alpha, beta);
+                Pos.UnMake();
+            }
+            return 0;
+        }
+        private int AlphaBetaMin(int Depth, int alpha, int beta)
+        {
+            if (Depth == 0) return Evaluate();
+            foreach (int Move in Pos.LegalMoves())
+            {
+
+            }
+            return 0;
+        }
+
+
+
         public bool IsThinking { get; private set; }
         Random R = new Random();
 
@@ -129,6 +182,7 @@ namespace PerfectChess
             int[] value = new int[2];
             for (int Color = White; Color <= Black; Color++)
             {
+                //Pawns
                 UInt64 pawnBitboard = Pos.PieceBitboard[Pawn | Color];
                 while (pawnBitboard != 0)
                 {
@@ -136,6 +190,7 @@ namespace PerfectChess
                     value[Color] += Evaluation.PawnCost + Evaluation.PawnPositionTable[Color][Index];
                 }
 
+                //Knights
                 UInt64 knightBitboard = Pos.PieceBitboard[Knight | Color];
                 while (knightBitboard != 0)
                 {
@@ -143,7 +198,6 @@ namespace PerfectChess
                     value[Color] += Evaluation.KnightCost + Evaluation.KnightPositionTable[Color][Index];
                 }
 
-                value[Color] += Evaluation.KnightCost * BitOperations.PopCount(Pos.GetPieces(Knight | Color));
                 value[Color] += Evaluation.BishopCost * BitOperations.PopCount(Pos.GetPieces(Bishop | Color));
                 value[Color] += Evaluation.RookCost * BitOperations.PopCount(Pos.GetPieces(Rook | Color));
                 value[Color] += Evaluation.QueenCost * BitOperations.PopCount(Pos.GetPieces(Queen | Color));

@@ -136,7 +136,7 @@ namespace PerfectChess
             BackgroundWhileMoving = new Bitmap(BoardPanel.BackgroundImage);
 
             BoardPanel.SetSquareImage(FROM, FROM_IMAGE);
-
+            BoardPanel.Refresh();
 
             //Сохранили квадрат с которого начинается ход
             MovingFromSquare = FROM;

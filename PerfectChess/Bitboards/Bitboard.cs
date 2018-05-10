@@ -41,7 +41,7 @@ namespace PerfectChess
         {
             if (square > 63 || square < 0) return 0;
             UInt64 bitboard = 1UL << square;
-            if (square / 8 == (square + dx) / 8)
+            if (Math.Floor(square / 8F) == Math.Floor((square + dx) / 8F))
                 bitboard |= GetRayBitboard(square + dx + 8 * dy, dx, dy);
             return bitboard;
         }
