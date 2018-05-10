@@ -34,7 +34,7 @@ namespace PerfectChess
         }
         public void ShowStats(string Text)
         {
-            Box.Text += Text + "\n";
+            Box.Text += Text;
         }
         public void ShowStats(Position P)
         {

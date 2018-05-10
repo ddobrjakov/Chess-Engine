@@ -76,7 +76,7 @@ namespace PerfectChess
                 }
 
 
-                //StartEngineWork();
+                StartEngineWork();
             }
             else { BoardView.CancelMove(); }
         }
@@ -85,7 +85,7 @@ namespace PerfectChess
             if (SuperSmartEngine.IsThinking) return;
             if (!Pos.LegalMoves().Any()) return;
 
-            for (int i = 0; i <= 1; i++)
+            for (int i = 0; i <= 0; i++)
             {
                 int? MoveToUndo = Pos.LastMove;
                 if (MoveToUndo == null)
@@ -99,17 +99,17 @@ namespace PerfectChess
             //Test.ShowStats(Pos);
         }
 
-        private async void StartEngineWork()
+        private /*async*/ void StartEngineWork()
         {
             BoardView.Text = "PerfectChess Engine - Thinking...";
 
-            int Move = -1;
-            await Task.Run(() => Move = SuperSmartEngine.BestMove(Pos));
+            int Move = -2;
+            /*await Task.Run(() => */Move = SuperSmartEngine.BestMove(Pos);
             //Move = SuperSmartEngine.BestMove(Pos);
             if (Move < 0)
             {
                 BoardView.Stalemate();//throw new Exception("Нет ходов");
-                BoardView.Text = "PerfectChess Engine";
+                BoardView.Text = "PerfectChess Engine" + Move;
                 return;
             }
 
