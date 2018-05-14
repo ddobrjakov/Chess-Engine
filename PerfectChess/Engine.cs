@@ -12,7 +12,7 @@ namespace PerfectChess
     {
         public Engine()
         {
-            Test.Show();
+            //Test.Show();
         }
         private Position Pos;
 
@@ -21,7 +21,7 @@ namespace PerfectChess
         {
             //Testing
             //if (Test != null) Test.Show();
-            Test.Reset();
+            //Test.Reset();
 
             this.IsThinking = true;
             //int Res = BestMoveMiniMaxApproach(P);
@@ -128,7 +128,7 @@ namespace PerfectChess
         }
 
 
-
+        /*
         private int AlphaBeta(int color, int Depth, int alpha, int beta)
         {
             if (Depth == 0) return Evaluate();
@@ -154,11 +154,11 @@ namespace PerfectChess
             }
             return alpha;
         }
-
+        */
         private int BestMoveAlphaBetaApproach(Position P)
         {
             this.Pos = P.DeepCopy();
-            int Depth = 4;
+            int Depth = 5;
 
             int alpha = -5000000;//int.MinValue;
             int beta = 5000000;// int.MaxValue;
@@ -172,10 +172,10 @@ namespace PerfectChess
                 foreach (int Move in Pos.LegalMoves())
                 {
                     Pos.Make(Move);
-                    int score = AlphaBetaMin(Depth - 1, alpha, beta);
+                    int score = AlphaBetaMin(Depth - 1, alpha - 1, beta);
                     Pos.UnMake();
 
-                    Test.ShowStats("\n" + PerfectChess.Move.Details(Move) + " — " + score + " (best: " + alpha + ")");
+                    //Test.ShowStats("\n" + PerfectChess.Move.Details(Move) + " — " + score + " (best: " + alpha + ")");
                     //if (score >= beta) { return beta; }
                     if (score > alpha)
                     {
@@ -200,10 +200,12 @@ namespace PerfectChess
                 foreach (int Move in Pos.LegalMoves())
                 {
                     Pos.Make(Move);
-                    int score = AlphaBetaMax(Depth - 1, alpha, beta);
+
+                    //+1 so that positions that are just as good as the current beta are counted to random generator
+                    int score = AlphaBetaMax(Depth - 1, alpha, beta + 1);
                     Pos.UnMake();
                     //if (score <= alpha) return alpha;
-                    Test.ShowStats("\n" + PerfectChess.Move.Details(Move) + " — " + score + " (best: " + beta + ")");
+                    //Test.ShowStats("\n" + PerfectChess.Move.Details(Move) + " — " + score + " (best: " + beta + ")");
                     if (score < beta)
                     {
                         Test.ShowStats(" — New Best!");
@@ -219,13 +221,13 @@ namespace PerfectChess
                 else
                 {
                     bestmove = BestMoves[beta][R.Next(BestMoves[beta].Count())];
-                    Test.ShowStats("\nFinal Best: " + Move.Details(bestmove) + " (" + beta + ")" + "\n");
+                    //Test.ShowStats("\nFinal Best: " + Move.Details(bestmove) + " (" + beta + ")" + "\n");
 
-                    string other = String.Empty;
-                    other += "Randomly choosed from (" + BestMoves[beta].Count + "): \n";
-                    foreach (int move in BestMoves[beta])
-                        other += "  " + Move.Details(move) + "\n";
-                    Test.ShowStats(other);
+                    //string other = String.Empty;
+                    //other += "Randomly choosed from (" + BestMoves[beta].Count + "): \n";
+                    //foreach (int move in BestMoves[beta])
+                    //    other += "  " + Move.Details(move) + "\n";
+                    //Test.ShowStats(other);
                 }
                 //return beta;
             }
@@ -242,7 +244,9 @@ namespace PerfectChess
                 Pos.Make(Move);
                 int score = AlphaBetaMin(Depth - 1, alpha, beta);
                 Pos.UnMake();
-                if (score >= beta) return beta + 1;
+
+                //We've found the move for white which gives them position better or equal to one they could at best get on the other black's move
+                if (score >= beta) return beta;
                 //if (score > beta) return beta + 1;
                 //else if (score == beta) return beta;
 
@@ -268,8 +272,8 @@ namespace PerfectChess
                 Pos.Make(Move);
                 int score = AlphaBetaMax(Depth - 1, alpha, beta);
                 Pos.UnMake();
-                if (score <= alpha) return alpha - 1;
-                //if (score < alpha) return alpha - 1;
+                //if (score <= alpha) return alpha - 1;
+                if (score <= alpha) return alpha;
                 //else if (score == alpha) return alpha;
 
                 if (score < beta) beta = score;
@@ -313,12 +317,34 @@ namespace PerfectChess
                     value[Color] += Evaluation.KnightCost + Evaluation.KnightPositionTable[Color][Index];
                 }
 
-                value[Color] += Evaluation.BishopCost * BitOperations.PopCount(Pos.GetPieces(Bishop | Color));
+                //Bishops
+                UInt64 bishopBitboard = Pos.PieceBitboard[Bishop | Color];
+                while (bishopBitboard != 0)
+                {
+                    int Index = BitOperations.PopLS(ref bishopBitboard);
+                    value[Color] += Evaluation.BishopCost + Evaluation.BishopPositionTable[Color][Index];
+                }
+
+                //value[Color] += Evaluation.BishopCost * BitOperations.PopCount(Pos.GetPieces(Bishop | Color));
                 value[Color] += Evaluation.RookCost * BitOperations.PopCount(Pos.GetPieces(Rook | Color));
                 value[Color] += Evaluation.QueenCost * BitOperations.PopCount(Pos.GetPieces(Queen | Color));
-                value[Color] += Evaluation.KingCost * BitOperations.PopCount(Pos.GetPieces(King | Color));
-                if (Pos.CastleLongIndex[Color] != 1 && Pos.CastleShortIndex[Color] != 1)
-                    value[Color] -= Evaluation.CastleAbilityCost;
+
+
+                //Kings
+                bool Ending = (Pos.PieceBitboard[Queen] == 0);
+                int[] PositionTable = Ending ? Evaluation.KingPositionEnding[Color] : Evaluation.KingPositionOpening[Color];
+                UInt64 kingBitboard = Pos.PieceBitboard[King | Color];
+                while (kingBitboard != 0)
+                {
+                    int Index = BitOperations.PopLS(ref kingBitboard);
+                    value[Color] += Evaluation.KingCost + PositionTable[Index];
+                }
+
+
+
+                //value[Color] += Evaluation.KingCost * BitOperations.PopCount(Pos.GetPieces(King | Color));
+                //if (Pos.CastleLongIndex[Color] != 1 && Pos.CastleShortIndex[Color] != 1)
+                //    value[Color] -= Evaluation.CastleAbilityCost;
             }
 
             return value[White] - value[Black];

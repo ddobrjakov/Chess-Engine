@@ -99,17 +99,17 @@ namespace PerfectChess
             //Test.ShowStats(Pos);
         }
 
-        private /*async*/ void StartEngineWork()
+        private async void StartEngineWork()
         {
             BoardView.Text = "PerfectChess Engine - Thinking...";
 
             int Move = -2;
-            /*await Task.Run(() => */Move = SuperSmartEngine.BestMove(Pos);
+            await Task.Run(() => Move = SuperSmartEngine.BestMove(Pos));
             //Move = SuperSmartEngine.BestMove(Pos);
             if (Move < 0)
             {
                 BoardView.Stalemate();//throw new Exception("Нет ходов");
-                BoardView.Text = "PerfectChess Engine" + Move;
+                BoardView.Text = "PerfectChess Engine";
                 return;
             }
 
