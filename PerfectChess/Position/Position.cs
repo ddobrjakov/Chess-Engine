@@ -200,6 +200,8 @@ namespace PerfectChess
         /// </summary>
         public bool Stalemate => !LegalMoves().Any() && !Check;
 
+        public bool GameFinished => !LegalMoves().Any();
+
         /// <summary>
         /// Returns new copy of current Position entity
         /// </summary>

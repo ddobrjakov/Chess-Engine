@@ -28,7 +28,7 @@ namespace PerfectChess
             this.Reset();
         }
 
-        private bool Flipped = true;
+        public bool Flipped { get; private set; } = false;
         public void Flip()
         {
             Flipped = !Flipped;

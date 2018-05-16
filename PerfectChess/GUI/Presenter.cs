@@ -27,7 +27,7 @@ namespace PerfectChess
             this.BoardView.WantNewGame += BoardView_WantNewGame;
         }
 
-        private void BoardView_WantNewGame(object sender, EventArgs e)
+        private void BoardView_WantNewGame(object sender, int e)
         {
             this.Pos = new Position();
             this.SuperSmartEngine = new Engine();
@@ -129,32 +129,6 @@ namespace PerfectChess
     }
 
 
-    public class Pres
-    {
-        private IPlayer PlayerWhite;
-        private IPlayer PlayerBlack;
-        private Position GamePosition;
-        private IPlayer PlayerToMove => (this.GamePosition.ColorToMove == Color.White) ? this.PlayerWhite : this.PlayerBlack;
-        private IPlayer PlayerWaiting => (this.GamePosition.ColorToMove == Color.Black) ? this.PlayerWhite : this.PlayerBlack;
-
-        public Pres(IPlayer Player1, IPlayer Player2, Position StartPosition)
-        {
-            this.PlayerWhite = Player1;
-            this.PlayerBlack = Player2;
-            this.GamePosition = StartPosition;
-        }
-
-        private void MoveFromTheBoard(int Move)
-        {
-            if (PlayerToMove.Human) PlayerToMove.MakeMove(Move);
-            else if (PlayerWaiting.Human) { PlayerWaiting.PreMoves.Push(Move); }
-            else { /*Don't bother the comps! Let them play!*/ }
-        }
-        private void MoveHandle(IPlayer Player, int Move)
-        {
-
-        }
-    }
 
     public abstract class Player
     {
@@ -166,6 +140,8 @@ namespace PerfectChess
 
         public Stack<int> PreMoves { get; private set; } = new Stack<int>();
         public event EventHandler<int> MakesMove;
+
+        public abstract bool IsThinking { get; }
     }
     public class HumanPlayer : Player
     {
@@ -174,15 +150,12 @@ namespace PerfectChess
             if (PreMoves.Any()) MakeMove(PreMoves.Pop());
             //I don't care else
         }
+        public override bool IsThinking => false;
     }
 
     public class EnginePlayer : Player
     {
-        public EnginePlayer(Engine E)
-        {
-            this.E = E;
-        }
-        private Engine E;
+        private Engine E = new Engine();
         public override async void YourMove(Position P)
         {
             if (PreMoves.Any()) MakeMove(PreMoves.Pop());
@@ -193,6 +166,7 @@ namespace PerfectChess
                 MakeMove(Move);
             }
         }
+        public override bool IsThinking => E.IsThinking;
     }
 
 
@@ -208,9 +182,70 @@ namespace PerfectChess
             this.BoardView = BoardView;
 
             this.BoardView.AskForFinish += BoardView_AskForFinish;
+            this.BoardView.AskForUndo += BoardView_AskForUndo;
+            this.BoardView.WantNewGame += BoardView_WantNewGame;
+            this.BoardView.SquareTapped += BoardView_SquareTapped;
+
 
             this.PlayerWhite.MakesMove += Player_MakesMove;
             this.PlayerBlack.MakesMove += Player_MakesMove;
+        }
+
+        private void BoardView_SquareTapped(object sender, Square S)
+        {
+            int Piece = GamePosition[S.X + 8 * S.Y];
+            if (Piece == 0) return;
+            if (PlayerToMove is EnginePlayer && ((Piece & Color.Mask) == ((PlayerToMove == PlayerWhite) ? Color.White : Color.Black))) return; 
+
+            List<int> Moves = GamePosition.LegalMoves();
+
+            List<Square> EmptyAvailibleSquares = new List<Square>();
+            List<Square> EnemyAvailibleSquares = new List<Square>();
+
+            foreach (int Move in Moves.Where(m => PerfectChess.Move.FromSquare(m) == S.X + 8 * S.Y))
+            {
+                if (PerfectChess.Move.ToPiece(Move) == 0)
+                    EmptyAvailibleSquares.Add(Square.Get(PerfectChess.Move.ToSquare(Move) % 8 + 1, PerfectChess.Move.ToSquare(Move) / 8 + 1));
+                else EnemyAvailibleSquares.Add(Square.Get(PerfectChess.Move.ToSquare(Move) % 8 + 1, PerfectChess.Move.ToSquare(Move) / 8 + 1));
+            }
+            BoardView.StartMove(S, EmptyAvailibleSquares, EnemyAvailibleSquares);
+        }
+
+        private void BoardView_WantNewGame(object sender, int Players)
+        {
+            PlayerWhite = (((Players & 0b10) >> 1) == 1) ? (Player)(new HumanPlayer()) : (new EnginePlayer());
+            PlayerBlack = ((Players & 0b01) == 1) ? (Player)(new HumanPlayer()) : (new EnginePlayer());
+            this.PlayerWhite.MakesMove += Player_MakesMove;
+            this.PlayerBlack.MakesMove += Player_MakesMove;
+
+            GamePosition = new Position();
+            BoardView.SetStartPos(GamePosition);
+
+            if (PlayerBlack is HumanPlayer && PlayerWhite is EnginePlayer && !BoardView.BoardPanel.Flipped)
+                BoardView.BoardPanel.Flip();
+            if (PlayerWhite is HumanPlayer && PlayerBlack is EnginePlayer && BoardView.BoardPanel.Flipped)
+                BoardView.BoardPanel.Flip();
+
+            PlayerWhite.YourMove(GamePosition);
+        }
+
+        private void BoardView_AskForUndo(object sender, EventArgs e)
+        {
+            if (PlayerToMove.IsThinking) return;
+            if (GamePosition.GameFinished) return;
+
+            int HowManyHalfMoves = (PlayerWaiting is EnginePlayer) ? 2 : 1;
+            for (int i = 0; i < HowManyHalfMoves; i++)
+            {
+                int? MoveToUndo = GamePosition.LastMove;
+                if (MoveToUndo == null)
+                {
+                    //No moves handler
+                    return;
+                }
+                GamePosition.UnMake();
+                BoardView.UndoMove((int)MoveToUndo);
+            }
         }
 
         private void Player_MakesMove(object sender, int Move)
@@ -219,6 +254,10 @@ namespace PerfectChess
             //Make the move, tell the other guy he can move
             if (!GamePosition.LegalMoves().Contains(Move)) return;
             GamePosition.Make(Move);
+
+            if (PlayerWaiting is HumanPlayer) BoardView.FinishMove(Move);
+            else BoardView.PerformComputerMove(Move);
+
             PlayerToMove.YourMove(GamePosition.DeepCopy());
         }
 

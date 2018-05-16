@@ -18,7 +18,8 @@ namespace PerfectChess
             Application.SetCompatibleTextRenderingDefault(false);
 
             Form1 F = new Form1();
-            Presenter P = new Presenter(F); 
+            //Presenter P = new Presenter(F); 
+            Present P = new Present(F, new HumanPlayer(), new EnginePlayer(), new Position());
             Application.Run(F);
         }
     }

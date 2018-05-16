@@ -64,6 +64,12 @@
     </Compile>
     <Compile Include="GUI\Presenter.cs" />
     <Compile Include="Game.cs" />
+    <Compile Include="NewGameForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NewGameForm.Designer.cs">
+      <DependentUpon>NewGameForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Position\MakeUnmake.cs" />
     <Compile Include="Position\MoveGeneration.cs" />
     <Compile Include="Position\Position.cs" />
@@ -77,6 +83,9 @@
     </Compile>
     <EmbeddedResource Include="GUI\Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NewGameForm.resx">
+      <DependentUpon>NewGameForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

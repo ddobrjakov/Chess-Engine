@@ -291,10 +291,24 @@ namespace PerfectChess
             this.Text = Text;
         }
 
-        public event EventHandler WantNewGame;
+        /// <summary>
+        /// Параметр кодирует тип игры 2 битами: первый бит на белого игрока, второй на черного - 1 если игрок есть, 0 если компьютер
+        /// </summary>
+        public event EventHandler<int> WantNewGame;
         private void newGameButton_Click(object sender, EventArgs e)
         {
-            WantNewGame?.Invoke(this, EventArgs.Empty);
+            NewGameForm GameForm = new NewGameForm();
+            GameForm.StartPosition = FormStartPosition.CenterParent;
+            GameForm.ShowDialog();
+            if (GameForm.DialogResult == DialogResult.OK)
+            {
+                int State = (GameForm.WhiteHuman ? 1 : 0) * 2 + (GameForm.BlackHuman ? 1 : 0);
+                WantNewGame?.Invoke(this, State);
+            }
+            else
+            {
+                //Do nothing
+            }
         }
         public void SetStartPos(Position P)
         {
