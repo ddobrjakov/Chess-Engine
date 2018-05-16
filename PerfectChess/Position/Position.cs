@@ -9,8 +9,7 @@ using static PerfectChess.Color;
 namespace PerfectChess
 {
     public partial class Position
-    {
-        
+    {      
         public Position() : this(InitialPieces, White, 0b1111)
         {
         }
@@ -23,28 +22,17 @@ namespace PerfectChess
                 SquarePiece[i] = PieceToAdd;
 
                 if (PieceToAdd == 0) continue;
-                PieceBitboard[PieceToAdd] |= (1UL << i); //массив для фигуры
-                PieceBitboard[PieceToAdd & Color.Mask] |= (1UL << i); //массив для цвета
-                OccupiedBB |= (1UL << i); //массив всех фигур
-
-                //if ((PieceToAdd & Color.Mask) == White) WhitePieces |= (1UL << i);
-                //else BlackPieces |= (1UL << i);
+                PieceBitboard[PieceToAdd] |= (1UL << i); //Piece array
+                PieceBitboard[PieceToAdd & Color.Mask] |= (1UL << i); //Color array
+                OccupiedBB |= (1UL << i); //All pieces array
             }
             ColorToMove = ToMove;
-
-            //CanCastleShort[White] = (CastlingRights & 0b0001) != 0;
-            //CanCastleShort[Black] = (CastlingRights & 0b0010) != 0;
-            //CanCastleLong[White] = (CastlingRights & 0b0100) != 0;
-            //CanCastleLong[Black] = (CastlingRights & 0b1000) != 0;
 
             CastleShortIndex[White] = CastlingRights & 0b0001;
             CastleShortIndex[Black] = (CastlingRights & 0b0010) >> 1;
             CastleLongIndex[White] = (CastlingRights & 0b0100) >> 2;
             CastleLongIndex[Black] = (CastlingRights & 0b1000) >> 3;
 
-
-
-            //this.EnPassantSquare = EnPassant;
             EnPassantHistory.Push(EnPassant);
         }
 
@@ -115,53 +103,57 @@ namespace PerfectChess
             }
         }
 
-        public UInt64 GetPieces(int PieceType)
-        {
-            return PieceBitboard[PieceType];
-        }
-        /*public UInt64 WhitePawns => PieceBitboard[White | Pawn];
-        public UInt64 WhiteKnights => PieceBitboard[White | Knight];
-        public UInt64 WhiteBishops => PieceBitboard[White | Bishop];
-        public UInt64 WhiteRooks => PieceBitboard[White | Rook];
-        public UInt64 WhiteQueens => PieceBitboard[White | Queen];
-        public UInt64 WhiteKing => PieceBitboard[White | King];
-        public UInt64 WhitePiecesBB => PieceBitboard[White];
-
-        public UInt64 BlackPawns => PieceBitboard[Black | Pawn];
-        public UInt64 BlackKnights => PieceBitboard[Black | Knight];
-        public UInt64 BlackBishops => PieceBitboard[Black | Bishop];
-        public UInt64 BlackRooks => PieceBitboard[Black | Rook];
-        public UInt64 BlackQueens => PieceBitboard[Black | Queen];
-        public UInt64 BlackKing => PieceBitboard[Black | King];
-        public UInt64 BlackPiecesBB => PieceBitboard[Black];*/
-             
         //private UInt64 WhitePawnsAttacks => ((WhitePawns & ~FileABB) << 7) | ((WhitePawns & ~FileHBB) << 9);
 
+        /// <summary>
+        /// Returns the file of the given square
+        /// </summary>
+        /// <param name="square"></param>
+        /// <returns></returns>
         public static int File(int square)
         {
             return square & 7;
         }
+
+        /// <summary>
+        /// Returns the rank of the given square
+        /// </summary>
+        /// <param name="square"></param>
+        /// <returns></returns>
         public static int Rank(int square)
         {
             return square >> 3;
         }
 
+        /// <summary>
+        /// Represents an invalid square
+        /// </summary>
         private const int InvalidSquare = -1;
+
+        /// <summary>
+        /// Represents the starting position
+        /// </summary>
         public static readonly int[] InitialPieces =
         {
             (White|Rook), (White|Knight), (White|Bishop), (White|Queen), (White|King), (White|Bishop), (White|Knight), (White|Rook),
             (White|Pawn), (White|Pawn),   (White|Pawn),   (White|Pawn),  (White|Pawn), (White|Pawn),   (White|Pawn),   (White|Pawn),
-            None, None, None, None, None, None, None, None,
-            None, None, None, None, None, None, None, None,
-            None, None, None, None, None, None, None, None,
+            None,          None,          None,           None,          None,         None,           None,           None,
+            None,          None,          None,           None,          None,         None,           None,           None,
+            None,          None,          None,           None,          None,         None,           None,           None,
             None,          None,          None,           None,          None,         None,           None,           None,           
             (Black|Pawn), (Black|Pawn),   (Black|Pawn),   (Black|Pawn),  (Black|Pawn), (Black|Pawn),   (Black|Pawn),   (Black|Pawn),
             (Black|Rook), (Black|Knight), (Black|Bishop), (Black|Queen), (Black|King), (Black|Bishop), (Black|Knight), (Black|Rook)
         };
 
+        /// <summary>
+        /// Returns if the given square with a piece of given color is attcked
+        /// </summary>
+        /// <param name="Color"></param>
+        /// <param name="Square"></param>
+        /// <returns></returns>
         public bool IsAttacked(int Color, int Square)
         {
-            Int32 enemy = 1 - Color;
+            int enemy = 1 - Color;
 
             //Easy cases when pieces are not sliding
             if ((PieceBitboard[enemy | Knight] & Attack.Knight(Square)) != 0
@@ -182,15 +174,36 @@ namespace PerfectChess
 
             return false;
         }
+
+        /// <summary>
+        /// Returns if side is in check
+        /// </summary>
+        /// <param name="Color"></param>
+        /// <returns></returns>
         public bool IsInCheck(int Color)
         {
             return IsAttacked(Color, BitOperations.OnlyBitIndex(PieceBitboard[Color | King]));
         }
 
+        /// <summary>
+        /// Returns if current position is a check
+        /// </summary>
         public bool Check => IsInCheck(ColorToMove);
+
+        /// <summary>
+        /// Returns if current position is a checkmate
+        /// </summary>
         public bool Checkmate => Check && !LegalMoves().Any();
+
+        /// <summary>
+        /// Returns if current position is a stalemate
+        /// </summary>
         public bool Stalemate => !LegalMoves().Any() && !Check;
 
+        /// <summary>
+        /// Returns new copy of current Position entity
+        /// </summary>
+        /// <returns></returns>
         public Position DeepCopy()
         {
             Position Copied = new Position();
@@ -200,6 +213,7 @@ namespace PerfectChess
                 Copied.Make(Move);
             return Copied;
         }
+
         public override string ToString()
         {
             string Res = string.Empty;

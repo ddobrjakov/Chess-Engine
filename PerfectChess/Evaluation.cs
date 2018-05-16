@@ -130,6 +130,31 @@ namespace PerfectChess
                 -20,-10,-10,-10,-10,-10,-10,-20
             }
         };
+        public static readonly int[][] RookPositionTable = 
+        {
+            new int[64]
+            {
+                0,  0,  0,  5,  5,  0,  0,  0,
+               -5,  0,  0,  0,  0,  0,  0, -5,
+               -5,  0,  0,  0,  0,  0,  0, -5,
+               -5,  0,  0,  0,  0,  0,  0, -5,
+               -5,  0,  0,  0,  0,  0,  0, -5,
+               -5,  0,  0,  0,  0,  0,  0, -5,
+                5, 10, 10, 10, 10, 10, 10,  5,
+                0,  0,  0,  0,  0,  0,  0,  0
+            },
+            new int[64]
+            {
+                0,  0,  0,  0,  0,  0,  0,  0,
+                5, 10, 10, 10, 10, 10, 10,  5,
+               -5,  0,  0,  0,  0,  0,  0, -5,
+               -5,  0,  0,  0,  0,  0,  0, -5,
+               -5,  0,  0,  0,  0,  0,  0, -5,
+               -5,  0,  0,  0,  0,  0,  0, -5,
+               -5,  0,  0,  0,  0,  0,  0, -5,
+                0,  0,  0,  5,  5,  0,  0,  0
+            }
+        };
 
         public const int PawnCost = 100;
         public const int KnightCost = 300;
@@ -138,6 +163,9 @@ namespace PerfectChess
         public const int QueenCost = 900;
         public const int KingCost = 0;
 
-        public const int CastleAbilityCost = 50;
+        public const int CheckmateCost = 100000;
+        public const int Max =  5000000;
+        public const int Min = -5000000;
+        //public const int CastleAbilityCost = 50;
     }
 }

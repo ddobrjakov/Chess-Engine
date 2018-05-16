@@ -15,8 +15,9 @@ namespace PerfectChess
             //Test.Show();
         }
         private Position Pos;
-
+        private Random R = new Random();
         private TestForm Test = new TestForm();
+
         public int BestMove(Position P)
         {
             //Testing
@@ -24,11 +25,67 @@ namespace PerfectChess
             //Test.Reset();
 
             this.IsThinking = true;
-            //int Res = BestMoveMiniMaxApproach(P);
             int Res = BestMoveAlphaBetaApproach(P);
             this.IsThinking = false;
             return Res;
         }
+        public bool IsThinking { get; private set; }
+
+        private int Evaluate()
+        {
+            int[] value = new int[2];
+            for (int Color = White; Color <= Black; Color++)
+            {
+                //Pawns
+                UInt64 pawnBitboard = Pos.PieceBitboard[Pawn | Color];
+                while (pawnBitboard != 0)
+                {
+                    int Index = BitOperations.PopLS(ref pawnBitboard);
+                    value[Color] += Evaluation.PawnCost + Evaluation.PawnPositionTable[Color][Index];
+                }
+
+                //Knights
+                UInt64 knightBitboard = Pos.PieceBitboard[Knight | Color];
+                while (knightBitboard != 0)
+                {
+                    int Index = BitOperations.PopLS(ref knightBitboard);
+                    value[Color] += Evaluation.KnightCost + Evaluation.KnightPositionTable[Color][Index];
+                }
+
+                //Bishops
+                UInt64 bishopBitboard = Pos.PieceBitboard[Bishop | Color];
+                while (bishopBitboard != 0)
+                {
+                    int Index = BitOperations.PopLS(ref bishopBitboard);
+                    value[Color] += Evaluation.BishopCost + Evaluation.BishopPositionTable[Color][Index];
+                }
+
+                //Rooks
+                UInt64 rookBitboard = Pos.PieceBitboard[Rook | Color];
+                while (rookBitboard != 0)
+                {
+                    int Index = BitOperations.PopLS(ref rookBitboard);
+                    value[Color] += Evaluation.RookCost + Evaluation.RookPositionTable[Color][Index];
+                }
+
+
+                value[Color] += Evaluation.QueenCost * BitOperations.PopCount(Pos.PieceBitboard[Queen | Color]);
+
+
+                //Kings
+                bool Ending = (Pos.PieceBitboard[Queen] == 0);
+                int[] PositionTable = Ending ? Evaluation.KingPositionEnding[Color] : Evaluation.KingPositionOpening[Color];
+                UInt64 kingBitboard = Pos.PieceBitboard[King | Color];
+                while (kingBitboard != 0)
+                {
+                    int Index = BitOperations.PopLS(ref kingBitboard);
+                    value[Color] += Evaluation.KingCost + PositionTable[Index];
+                }
+            }
+
+            return value[White] - value[Black];
+        }
+
         private int BestMoveMiniMaxApproach(Position P)
         {
             this.Pos = P.DeepCopy();
@@ -127,61 +184,31 @@ namespace PerfectChess
             return alpha;
         }
 
-
-        /*
-        private int AlphaBeta(int color, int Depth, int alpha, int beta)
-        {
-            if (Depth == 0) return Evaluate();
-
-            int bestmove;
-            foreach (int move in Pos.LegalMoves())
-            {
-                Pos.Make(move);
-                int Evaluation = -AlphaBeta(1 - color, Depth - 1, -beta, -alpha);
-                Pos.UnMake();
-
-                if (Evaluation >= beta)
-                    return beta;
-
-                if (Evaluation > alpha)
-                {
-                    alpha = Evaluation;
-                    //if (Depth == defaultDepth)
-                    //{
-                    //    bestmove = moves.get(i);
-                    //}
-                }
-            }
-            return alpha;
-        }
-        */
         private int BestMoveAlphaBetaApproach(Position P)
         {
             this.Pos = P.DeepCopy();
             int Depth = 5;
 
-            int alpha = -5000000;//int.MinValue;
-            int beta = 5000000;// int.MaxValue;
+            int alpha = Evaluation.Min;
+            int beta = Evaluation.Max;
             int bestmove = -1;
 
+            //Dictionary used to store all the moves with it's evaluation as a key
             Dictionary<int, List<int>> BestMoves = new Dictionary<int, List<int>>();
 
             if (Pos.ColorToMove == White)
             {
-                //if (Depth == 0) return Evaluate();
                 foreach (int Move in Pos.LegalMoves())
                 {
                     Pos.Make(Move);
                     int score = AlphaBetaMin(Depth - 1, alpha - 1, beta);
                     Pos.UnMake();
 
-                    //Test.ShowStats("\n" + PerfectChess.Move.Details(Move) + " — " + score + " (best: " + alpha + ")");
-                    //if (score >= beta) { return beta; }
+                    ///Test.ShowStats("\n" + PerfectChess.Move.Details(Move) + " — " + score + " (best: " + alpha + ")");
                     if (score > alpha)
                     {
                         Test.ShowStats(" — New Best!");
                         alpha = score;
-                        //bestmove = Move;
                     }
                     if (BestMoves.Keys.Contains(score)) BestMoves[score].Add(Move);
                     else BestMoves.Add(score, new List<int> { Move });
@@ -192,25 +219,21 @@ namespace PerfectChess
                 {
                     bestmove = BestMoves[alpha][R.Next(BestMoves[alpha].Count())];
                 }
-                //return alpha;
             }
             else
             {
-                //if (Depth == 0) return Evaluate();
                 foreach (int Move in Pos.LegalMoves())
                 {
                     Pos.Make(Move);
-
                     //+1 so that positions that are just as good as the current beta are counted to random generator
                     int score = AlphaBetaMax(Depth - 1, alpha, beta + 1);
                     Pos.UnMake();
-                    //if (score <= alpha) return alpha;
-                    //Test.ShowStats("\n" + PerfectChess.Move.Details(Move) + " — " + score + " (best: " + beta + ")");
+
+                    ///Test.ShowStats("\n" + PerfectChess.Move.Details(Move) + " — " + score + " (best: " + beta + ")");
                     if (score < beta)
                     {
                         Test.ShowStats(" — New Best!");
                         beta = score;
-                        //bestmove = Move;
                     }
                     if (BestMoves.Keys.Contains(score)) BestMoves[score].Add(Move);
                     else BestMoves.Add(score, new List<int> { Move });
@@ -221,15 +244,13 @@ namespace PerfectChess
                 else
                 {
                     bestmove = BestMoves[beta][R.Next(BestMoves[beta].Count())];
-                    //Test.ShowStats("\nFinal Best: " + Move.Details(bestmove) + " (" + beta + ")" + "\n");
-
-                    //string other = String.Empty;
-                    //other += "Randomly choosed from (" + BestMoves[beta].Count + "): \n";
-                    //foreach (int move in BestMoves[beta])
-                    //    other += "  " + Move.Details(move) + "\n";
-                    //Test.ShowStats(other);
+                    ///Test.ShowStats("\nFinal Best: " + Move.Details(bestmove) + " (" + beta + ")" + "\n");
+                    ///string other = String.Empty;
+                    ///other += "Randomly choosed from (" + BestMoves[beta].Count + "): \n";
+                    ///foreach (int move in BestMoves[beta])
+                    ///    other += "  " + Move.Details(move) + "\n";
+                    ///Test.ShowStats(other);
                 }
-                //return beta;
             }
             
             return bestmove;
@@ -247,9 +268,6 @@ namespace PerfectChess
 
                 //We've found the move for white which gives them position better or equal to one they could at best get on the other black's move
                 if (score >= beta) return beta;
-                //if (score > beta) return beta + 1;
-                //else if (score == beta) return beta;
-
                 if (score > alpha) alpha = score;
             }
             if (!Moves)
@@ -272,10 +290,7 @@ namespace PerfectChess
                 Pos.Make(Move);
                 int score = AlphaBetaMax(Depth - 1, alpha, beta);
                 Pos.UnMake();
-                //if (score <= alpha) return alpha - 1;
                 if (score <= alpha) return alpha;
-                //else if (score == alpha) return alpha;
-
                 if (score < beta) beta = score;
             }
 
@@ -283,71 +298,12 @@ namespace PerfectChess
             {
                 //Checkmate or Stalemate
                 if (Pos.IsInCheck(Pos.ColorToMove))
-                    return (Pos.ColorToMove == Black) ? 100000 : -100000;
+                    return (Pos.ColorToMove == Black) ? Evaluation.CheckmateCost : -Evaluation.CheckmateCost;
                 else return 0;
             }
 
 
             return beta;
-        }
-
-
-
-        public bool IsThinking { get; private set; }
-        Random R = new Random();
-
-        private int Evaluate()
-        {
-            int[] value = new int[2];
-            for (int Color = White; Color <= Black; Color++)
-            {
-                //Pawns
-                UInt64 pawnBitboard = Pos.PieceBitboard[Pawn | Color];
-                while (pawnBitboard != 0)
-                {
-                    int Index = BitOperations.PopLS(ref pawnBitboard);
-                    value[Color] += Evaluation.PawnCost + Evaluation.PawnPositionTable[Color][Index];
-                }
-
-                //Knights
-                UInt64 knightBitboard = Pos.PieceBitboard[Knight | Color];
-                while (knightBitboard != 0)
-                {
-                    int Index = BitOperations.PopLS(ref knightBitboard);
-                    value[Color] += Evaluation.KnightCost + Evaluation.KnightPositionTable[Color][Index];
-                }
-
-                //Bishops
-                UInt64 bishopBitboard = Pos.PieceBitboard[Bishop | Color];
-                while (bishopBitboard != 0)
-                {
-                    int Index = BitOperations.PopLS(ref bishopBitboard);
-                    value[Color] += Evaluation.BishopCost + Evaluation.BishopPositionTable[Color][Index];
-                }
-
-                //value[Color] += Evaluation.BishopCost * BitOperations.PopCount(Pos.GetPieces(Bishop | Color));
-                value[Color] += Evaluation.RookCost * BitOperations.PopCount(Pos.GetPieces(Rook | Color));
-                value[Color] += Evaluation.QueenCost * BitOperations.PopCount(Pos.GetPieces(Queen | Color));
-
-
-                //Kings
-                bool Ending = (Pos.PieceBitboard[Queen] == 0);
-                int[] PositionTable = Ending ? Evaluation.KingPositionEnding[Color] : Evaluation.KingPositionOpening[Color];
-                UInt64 kingBitboard = Pos.PieceBitboard[King | Color];
-                while (kingBitboard != 0)
-                {
-                    int Index = BitOperations.PopLS(ref kingBitboard);
-                    value[Color] += Evaluation.KingCost + PositionTable[Index];
-                }
-
-
-
-                //value[Color] += Evaluation.KingCost * BitOperations.PopCount(Pos.GetPieces(King | Color));
-                //if (Pos.CastleLongIndex[Color] != 1 && Pos.CastleShortIndex[Color] != 1)
-                //    value[Color] -= Evaluation.CastleAbilityCost;
-            }
-
-            return value[White] - value[Black];
         }
     }
 }

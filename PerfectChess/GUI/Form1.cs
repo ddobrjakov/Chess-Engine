@@ -18,12 +18,11 @@ namespace PerfectChess
         public Form1()
         {
             InitializeComponent();
+            this.BackColor = ViewSettings.BACKGROUND_COLOR;
 
             //Form Test = new TestForm();
             //Test.Show();
 
-
-            this.BackColor = ViewSettings.BACKGROUND_COLOR;
             //
             // BoardPanel
             //
@@ -31,35 +30,11 @@ namespace PerfectChess
             BoardPanel.Location = new Point(50, 50);
             this.Controls.Add(BoardPanel);
 
-            //
-            // Заполняем фигурками, пока тут и пока так
-            //
-            BoardPanel.SetSquareImage(Square.Get(2, 1), ViewSettings.WHITE_KNIGHT);
-            BoardPanel.SetSquareImage(Square.Get(7, 1), ViewSettings.WHITE_KNIGHT);
-            BoardPanel.SetSquareImage(Square.Get(1, 1), ViewSettings.WHITE_ROOK);
-            BoardPanel.SetSquareImage(Square.Get(8, 1), ViewSettings.WHITE_ROOK);
-            BoardPanel.SetSquareImage(Square.Get(3, 1), ViewSettings.WHITE_BISHOP);
-            BoardPanel.SetSquareImage(Square.Get(6, 1), ViewSettings.WHITE_BISHOP);
-            BoardPanel.SetSquareImage(Square.Get(4, 1), ViewSettings.WHITE_QUEEN);
-            BoardPanel.SetSquareImage(Square.Get(5, 1), ViewSettings.WHITE_KING);
-
-            BoardPanel.SetSquareImage(Square.Get(2, 8), ViewSettings.BLACK_KNIGHT);
-            BoardPanel.SetSquareImage(Square.Get(7, 8), ViewSettings.BLACK_KNIGHT);
-            BoardPanel.SetSquareImage(Square.Get(1, 8), ViewSettings.BLACK_ROOK);
-            BoardPanel.SetSquareImage(Square.Get(8, 8), ViewSettings.BLACK_ROOK);
-            BoardPanel.SetSquareImage(Square.Get(3, 8), ViewSettings.BLACK_BISHOP);
-            BoardPanel.SetSquareImage(Square.Get(6, 8), ViewSettings.BLACK_BISHOP);
-            BoardPanel.SetSquareImage(Square.Get(4, 8), ViewSettings.BLACK_QUEEN);
-            BoardPanel.SetSquareImage(Square.Get(5, 8), ViewSettings.BLACK_KING);
-            for (int i = 1; i <= 8; i++)
-            {
-                BoardPanel.SetSquareImage(Square.Get(i, 2), ViewSettings.WHITE_PAWN);
-                BoardPanel.SetSquareImage(Square.Get(i, 7), ViewSettings.BLACK_PAWN);
-            }
-
             BoardPanel.MouseDown += BoardPanel_MouseDown;
             BoardPanel.MouseMove += BoardPanel_MouseMove;
             BoardPanel.MouseUp += BoardPanel_MouseUp;
+
+            SetStartPos(new Position());
         }
         public BoardPanel BoardPanel { get; private set; }
         public void undoButton_Click(object sender, EventArgs e)

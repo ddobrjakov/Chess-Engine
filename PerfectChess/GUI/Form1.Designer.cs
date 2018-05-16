@@ -45,21 +45,23 @@
             // 
             // button1
             // 
+            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.button1.Location = new System.Drawing.Point(809, 55);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(205, 55);
             this.button1.TabIndex = 1;
-            this.button1.Text = "Отменить ход";
+            this.button1.Text = "Undo Move";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.undoButton_Click);
             // 
             // newGameButton
             // 
+            this.newGameButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.newGameButton.Location = new System.Drawing.Point(1052, 55);
             this.newGameButton.Name = "newGameButton";
             this.newGameButton.Size = new System.Drawing.Size(218, 55);
             this.newGameButton.TabIndex = 2;
-            this.newGameButton.Text = "Новая игра";
+            this.newGameButton.Text = "New Game";
             this.newGameButton.UseVisualStyleBackColor = true;
             this.newGameButton.Click += new System.EventHandler(this.newGameButton_Click);
             // 
