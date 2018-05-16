@@ -348,57 +348,8 @@ namespace PerfectChess
             return base.GetHashCode();
         }
     }
-    public static class ViewSettings
-    {
-        public const int SQUARESIZE = 60;
-        public static readonly System.Drawing.Color BACKGROUND_COLOR = System.Drawing.Color.FromArgb(26, 26, 26);
-        public static readonly System.Drawing.Color WHITE_SQUARE_COLOR = System.Drawing.Color.FromArgb(240, 217, 181);
-        public static readonly System.Drawing.Color BLACK_SQUARE_COLOR = System.Drawing.Color.FromArgb(181, 136, 99);
-
-        public static readonly System.Drawing.Color WHITE_AVAILIBLE_COLOR = System.Drawing.Color.FromArgb(240, 149, 119);
-        public static readonly System.Drawing.Color BLACK_AVAILIBLE_COLOR = System.Drawing.Color.FromArgb(181, 105, 74);
 
 
-        public static readonly Image WHITE_PAWN = Image.FromFile("../../../images/WhitePawn.png");
-        public static readonly Image WHITE_KNIGHT = Image.FromFile("../../../images/WhiteKnight.png");
-        public static readonly Image WHITE_BISHOP = Image.FromFile("../../../images/WhiteBishop.png");
-        public static readonly Image WHITE_ROOK = Image.FromFile("../../../images/WhiteRook.png");
-        public static readonly Image WHITE_QUEEN = Image.FromFile("../../../images/WhiteQueen.png");
-        public static readonly Image WHITE_KING = Image.FromFile("../../../images/WhiteKing.png");
-
-        public static readonly Image BLACK_PAWN = Image.FromFile("../../../images/BlackPawn.png");
-        public static readonly Image BLACK_KNIGHT = Image.FromFile("../../../images/BlackKnight.png");
-        public static readonly Image BLACK_BISHOP = Image.FromFile("../../../images/BlackBishop.png");
-        public static readonly Image BLACK_ROOK = Image.FromFile("../../../images/BlackRook.png");
-        public static readonly Image BLACK_QUEEN = Image.FromFile("../../../images/BlackQueen.png");
-        public static readonly Image BLACK_KING = Image.FromFile("../../../images/BlackKing.png");
 
 
-        public static readonly Image CIRCLE_FILLED = Image.FromFile("../../../images/CircleFilled.png");
-    }
-
-
-    public static class ViewModelConnector
-    {
-        public static Dictionary<int, Image> PieceImage = new Dictionary<int, Image>
-        {
-            { PerfectChess.Color.White | PerfectChess.Piece.Pawn, ViewSettings.WHITE_PAWN },
-            { PerfectChess.Color.White | PerfectChess.Piece.Knight, ViewSettings.WHITE_KNIGHT },
-            { PerfectChess.Color.White | PerfectChess.Piece.Bishop, ViewSettings.WHITE_BISHOP },
-            { PerfectChess.Color.White | PerfectChess.Piece.Rook, ViewSettings.WHITE_ROOK },
-            { PerfectChess.Color.White | PerfectChess.Piece.Queen, ViewSettings.WHITE_QUEEN },
-            { PerfectChess.Color.White | PerfectChess.Piece.King, ViewSettings.WHITE_KING },
-            { PerfectChess.Color.Black | PerfectChess.Piece.Pawn, ViewSettings.BLACK_PAWN },
-            { PerfectChess.Color.Black | PerfectChess.Piece.Knight, ViewSettings.BLACK_KNIGHT },
-            { PerfectChess.Color.Black | PerfectChess.Piece.Bishop, ViewSettings.BLACK_BISHOP },
-            { PerfectChess.Color.Black | PerfectChess.Piece.Rook, ViewSettings.BLACK_ROOK },
-            { PerfectChess.Color.Black | PerfectChess.Piece.Queen, ViewSettings.BLACK_QUEEN },
-            { PerfectChess.Color.Black | PerfectChess.Piece.King, ViewSettings.BLACK_KING }
-        };
-        public static Dictionary<int, System.Drawing.Color> RealColor = new Dictionary<int, System.Drawing.Color>
-        {
-            { PerfectChess.Color.White, ViewSettings.WHITE_SQUARE_COLOR },
-            { PerfectChess.Color.Black, ViewSettings.BLACK_SQUARE_COLOR }
-        };
-    }
 }
