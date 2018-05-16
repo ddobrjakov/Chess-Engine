@@ -28,6 +28,13 @@ namespace PerfectChess
             this.Reset();
         }
 
+        private bool Flipped = true;
+        public void Flip()
+        {
+            Flipped = !Flipped;
+            SoftReset();
+            Restore();
+        }
 
         //public SquareInfo[,] Squares;
         private Dictionary<Square, Image> SquareInfo = new Dictionary<Square, Image>();//SquareVisualInfo> SquareInfo = new Dictionary<Square, SquareVisualInfo>();
@@ -54,6 +61,29 @@ namespace PerfectChess
         {
             BoardGraphics.DrawImage(Image, GetLocationRectangle(Square));
         }
+        public void DrawSquareCenter(Square Square, Image Image)
+        {
+            Rectangle LocationRectangle = new Rectangle();
+            int X, Y;
+
+            if (!Flipped)
+            {
+                X = (int)(Square.File - 1) * ViewSettings.SQUARESIZE;
+                Y = (8 - Square.Rank) * ViewSettings.SQUARESIZE;
+            }
+            else
+            {
+                X = (int)(8 - Square.File) * ViewSettings.SQUARESIZE;
+                Y = (Square.Rank - 1) * ViewSettings.SQUARESIZE;
+            }
+
+            LocationRectangle.X = X + (ViewSettings.SQUARESIZE - Image.Width) / 2;
+            LocationRectangle.Y = Y + (ViewSettings.SQUARESIZE - Image.Height) / 2;
+            LocationRectangle.Width = Image.Width;
+            LocationRectangle.Height = Image.Height;
+
+            BoardGraphics.DrawImage(Image, LocationRectangle);
+        }
         public void Draw(Image Image, Rectangle R)
         {
             BoardGraphics.DrawImage(Image, R);
@@ -71,6 +101,23 @@ namespace PerfectChess
             BoardGraphics.DrawImage(Image, 0, 0, this.Width, this.Height);
         }
 
+        public void SoftReset()
+        {
+            this.BackgroundImage = new Bitmap(this.Width, this.Height);
+            for (int file = 1; file <= 8; file++)
+                for (int rank = 1; rank <= 8; rank++)
+                    SoftResetSquare(Square.Get(file, rank));
+        }
+        public void SoftResetSquare(Square S)
+        {
+            System.Drawing.Color C = (S.Color == Color.White) ?
+                       ViewSettings.WHITE_SQUARE_COLOR : ViewSettings.BLACK_SQUARE_COLOR;
+            Bitmap SolidColorBMP = new Bitmap(ViewSettings.SQUARESIZE, ViewSettings.SQUARESIZE);
+            Graphics.FromImage(SolidColorBMP).FillRectangle(new SolidBrush(C), 0, 0, SolidColorBMP.Width, SolidColorBMP.Height);
+
+            DrawSquare(S, SolidColorBMP);
+        }
+
         //Воздействуют на словарь (зависят от него)
         public void Reset()
         {
@@ -81,14 +128,17 @@ namespace PerfectChess
         }
         public void ResetSquare(Square S)
         {
-            SetSquareColor(S, (S.Color == Game.Colors.White) ?
+            SetSquareColor(S, (S.Color == Color.White) ?
                         ViewSettings.WHITE_SQUARE_COLOR : ViewSettings.BLACK_SQUARE_COLOR);
         }
 
+
         public void Restore()
         {
-            foreach (Square S in SquareInfo.Keys)
+            IEnumerable<Square> Squares = Square._ALL;
+            foreach (Square S in Squares)
                 Restore(S);
+            this.Refresh();
         }
         public void Restore(Square S)
         {
@@ -113,9 +163,18 @@ namespace PerfectChess
         public void SetSquareImageCenter(Square Square, Image Image)
         {
             Rectangle LocationRectangle = new Rectangle();
-            int X = (int)(Square.File - 1) * ViewSettings.SQUARESIZE;
-            int Y = (8 - Square.Rank) * ViewSettings.SQUARESIZE;
+            int X, Y;
 
+            if (!Flipped)
+            {
+                X = (int)(Square.File - 1) * ViewSettings.SQUARESIZE;
+                Y = (8 - Square.Rank) * ViewSettings.SQUARESIZE;
+            }
+            else
+            {
+                X = (int)(8 - Square.File) * ViewSettings.SQUARESIZE;
+                Y = (Square.Rank - 1) * ViewSettings.SQUARESIZE;
+            }
 
             LocationRectangle.X = X + (ViewSettings.SQUARESIZE - Image.Width) / 2;
             LocationRectangle.Y = Y + (ViewSettings.SQUARESIZE - Image.Height) / 2;
@@ -130,8 +189,18 @@ namespace PerfectChess
         public Square GetSquare(Point Location)
         {
             if (Location.X > 8 * ViewSettings.SQUARESIZE || Location.Y > 8 * ViewSettings.SQUARESIZE) throw new ArgumentException();
-            int File = Location.X / ViewSettings.SQUARESIZE + 1;
-            int Rank = 8 - Location.Y / ViewSettings.SQUARESIZE;
+
+            int File, Rank;
+            if (!Flipped)
+            {
+                File = Location.X / ViewSettings.SQUARESIZE + 1;
+                Rank = 8 - Location.Y / ViewSettings.SQUARESIZE;
+            }
+            else
+            {
+                File = 8 - Location.X / ViewSettings.SQUARESIZE;
+                Rank = Location.Y / ViewSettings.SQUARESIZE + 1;
+            }
             return Square.Get(File, Rank);
         }
         public Image GetSquareImage(Square Square)
@@ -153,10 +222,18 @@ namespace PerfectChess
         private Rectangle GetLocationRectangle(Square S)
         {
             Rectangle LocationRectangle = new Rectangle();
-            LocationRectangle.X = (int)(S.File - 1) * ViewSettings.SQUARESIZE;
-            LocationRectangle.Y = (8 - S.Rank) * ViewSettings.SQUARESIZE;
-            LocationRectangle.Width = LocationRectangle.Height = ViewSettings.SQUARESIZE;
-
+            if (!Flipped)
+            {
+                LocationRectangle.X = (int)(S.File - 1) * ViewSettings.SQUARESIZE;
+                LocationRectangle.Y = (8 - S.Rank) * ViewSettings.SQUARESIZE;
+                LocationRectangle.Width = LocationRectangle.Height = ViewSettings.SQUARESIZE;
+            }
+            else
+            {
+                LocationRectangle.X = (int)(8 - S.File) * ViewSettings.SQUARESIZE;
+                LocationRectangle.Y = (S.Rank - 1) * ViewSettings.SQUARESIZE;
+                LocationRectangle.Width = LocationRectangle.Height = ViewSettings.SQUARESIZE;
+            }
             return LocationRectangle;
         }
     }
@@ -234,7 +311,7 @@ namespace PerfectChess
         public enum Files { A = 1, B, C, D, E, F, G, H }
         public int Rank { get; private set; }
         public Files File { get; private set; }
-        public Game.Colors Color { get { return ((int)this.File + this.Rank) % 2 == 0 ? Game.Colors.Black : Game.Colors.White; } }
+        public int Color { get { return ((int)this.File + this.Rank) % 2 == 0 ? PerfectChess.Color.Black : PerfectChess.Color.White; } }
         public override string ToString()
         {
             return "[" + File + Rank + "]";
@@ -247,7 +324,7 @@ namespace PerfectChess
                 All[i] = new Square(i % 8 + 1, i / 8 + 1);
             _ALL = All;
         }
-        private static readonly Square[] _ALL;
+        public static readonly Square[] _ALL;
 
         public int X => (int)File - 1;
         public int Y => Rank - 1;
@@ -298,10 +375,6 @@ namespace PerfectChess
 
 
         public static readonly Image CIRCLE_FILLED = Image.FromFile("../../../images/CircleFilled.png");
-    }
-    public class Game
-    {
-        public enum Colors { White = 0, Black = 1 }
     }
 
 

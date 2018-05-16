@@ -63,6 +63,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="GUI\Presenter.cs" />
+    <Compile Include="Game.cs" />
     <Compile Include="Position\MakeUnmake.cs" />
     <Compile Include="Position\MoveGeneration.cs" />
     <Compile Include="Position\Position.cs" />

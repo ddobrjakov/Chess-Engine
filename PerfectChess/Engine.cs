@@ -8,7 +8,7 @@ using static PerfectChess.Piece;
 
 namespace PerfectChess
 {
-    class Engine
+    public class Engine
     {
         public Engine()
         {
@@ -86,6 +86,7 @@ namespace PerfectChess
             return value[White] - value[Black];
         }
 
+        #region Minimax
         private int BestMoveMiniMaxApproach(Position P)
         {
             this.Pos = P.DeepCopy();
@@ -183,6 +184,7 @@ namespace PerfectChess
 
             return alpha;
         }
+        #endregion
 
         private int BestMoveAlphaBetaApproach(Position P)
         {

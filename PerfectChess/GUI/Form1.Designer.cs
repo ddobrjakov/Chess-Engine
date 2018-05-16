@@ -31,6 +31,7 @@
             this.TestOutput = new System.Windows.Forms.RichTextBox();
             this.button1 = new System.Windows.Forms.Button();
             this.newGameButton = new System.Windows.Forms.Button();
+            this.buttonFlip = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // TestOutput
@@ -65,11 +66,22 @@
             this.newGameButton.UseVisualStyleBackColor = true;
             this.newGameButton.Click += new System.EventHandler(this.newGameButton_Click);
             // 
+            // buttonFlip
+            // 
+            this.buttonFlip.Location = new System.Drawing.Point(63, 674);
+            this.buttonFlip.Name = "buttonFlip";
+            this.buttonFlip.Size = new System.Drawing.Size(143, 33);
+            this.buttonFlip.TabIndex = 3;
+            this.buttonFlip.Text = "Flip the board";
+            this.buttonFlip.UseVisualStyleBackColor = true;
+            this.buttonFlip.Click += new System.EventHandler(this.buttonFlip_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1436, 744);
+            this.Controls.Add(this.buttonFlip);
             this.Controls.Add(this.newGameButton);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.TestOutput);
@@ -84,6 +96,7 @@
         private System.Windows.Forms.RichTextBox TestOutput;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button newGameButton;
+        private System.Windows.Forms.Button buttonFlip;
     }
 }
 

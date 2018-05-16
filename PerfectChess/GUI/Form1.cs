@@ -23,9 +23,6 @@ namespace PerfectChess
             //Form Test = new TestForm();
             //Test.Show();
 
-            //
-            // BoardPanel
-            //
             BoardPanel = new BoardPanel();
             BoardPanel.Location = new Point(50, 50);
             this.Controls.Add(BoardPanel);
@@ -90,7 +87,7 @@ namespace PerfectChess
             foreach (Square P in EmptyAvailibleSquares)
             {
                 TestOutput.Text += P.ToString();
-                BoardPanel.SetSquareImageCenter(P, ViewSettings.CIRCLE_FILLED);
+                BoardPanel.DrawSquareCenter(P, ViewSettings.CIRCLE_FILLED);
             }
 
             //Демонстрация взятий
@@ -101,7 +98,7 @@ namespace PerfectChess
                 TestOutput.Text += EnemySquare.ToString();
                 Bitmap EnemyImage = new Bitmap(BoardPanel.GetSquareImage(EnemySquare));
 
-                if (EnemySquare.Color == Game.Colors.White) BoardPanel.SetSquareColor(EnemySquare, ViewSettings.WHITE_AVAILIBLE_COLOR);
+                if (EnemySquare.Color == Color.White) BoardPanel.SetSquareColor(EnemySquare, ViewSettings.WHITE_AVAILIBLE_COLOR);
                 else BoardPanel.SetSquareColor(EnemySquare, ViewSettings.BLACK_AVAILIBLE_COLOR);
 
                 BoardPanel.SetSquareImage(EnemySquare, EnemyImage);
@@ -313,6 +310,11 @@ namespace PerfectChess
             MoveStartAllowed = false;
             MousePressed = false;
             ImageMoving = null;
+        }
+
+        private void buttonFlip_Click(object sender, EventArgs e)
+        {
+            BoardPanel.Flip();
         }
     }
 

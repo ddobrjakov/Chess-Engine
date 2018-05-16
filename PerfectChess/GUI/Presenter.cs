@@ -127,4 +127,126 @@ namespace PerfectChess
 
         private Engine SuperSmartEngine;
     }
+
+
+    public class Pres
+    {
+        private IPlayer PlayerWhite;
+        private IPlayer PlayerBlack;
+        private Position GamePosition;
+        private IPlayer PlayerToMove => (this.GamePosition.ColorToMove == Color.White) ? this.PlayerWhite : this.PlayerBlack;
+        private IPlayer PlayerWaiting => (this.GamePosition.ColorToMove == Color.Black) ? this.PlayerWhite : this.PlayerBlack;
+
+        public Pres(IPlayer Player1, IPlayer Player2, Position StartPosition)
+        {
+            this.PlayerWhite = Player1;
+            this.PlayerBlack = Player2;
+            this.GamePosition = StartPosition;
+        }
+
+        private void MoveFromTheBoard(int Move)
+        {
+            if (PlayerToMove.Human) PlayerToMove.MakeMove(Move);
+            else if (PlayerWaiting.Human) { PlayerWaiting.PreMoves.Push(Move); }
+            else { /*Don't bother the comps! Let them play!*/ }
+        }
+        private void MoveHandle(IPlayer Player, int Move)
+        {
+
+        }
+    }
+
+    public abstract class Player
+    {
+        public abstract void YourMove(Position P);
+        public void MakeMove(int Move)
+        {
+            MakesMove?.Invoke(this, Move);
+        }
+
+        public Stack<int> PreMoves { get; private set; } = new Stack<int>();
+        public event EventHandler<int> MakesMove;
+    }
+    public class HumanPlayer : Player
+    {
+        public override void YourMove(Position P)
+        {
+            if (PreMoves.Any()) MakeMove(PreMoves.Pop());
+            //I don't care else
+        }
+    }
+
+    public class EnginePlayer : Player
+    {
+        public EnginePlayer(Engine E)
+        {
+            this.E = E;
+        }
+        private Engine E;
+        public override async void YourMove(Position P)
+        {
+            if (PreMoves.Any()) MakeMove(PreMoves.Pop());
+            else
+            {
+                int Move = -1;
+                await Task.Run(() => Move = E.BestMove(P));
+                MakeMove(Move);
+            }
+        }
+    }
+
+
+
+
+    public class Present
+    {
+        public Present(Form1 BoardView, Player PlayerWhite, Player PlayerBlack, Position StartPosition)
+        {
+            this.PlayerWhite = PlayerWhite;
+            this.PlayerBlack = PlayerBlack;
+            this.GamePosition = StartPosition;
+            this.BoardView = BoardView;
+
+            this.BoardView.AskForFinish += BoardView_AskForFinish;
+
+            this.PlayerWhite.MakesMove += Player_MakesMove;
+            this.PlayerBlack.MakesMove += Player_MakesMove;
+        }
+
+        private void Player_MakesMove(object sender, int Move)
+        {
+            //Check for legality
+            //Make the move, tell the other guy he can move
+            if (!GamePosition.LegalMoves().Contains(Move)) return;
+            GamePosition.Make(Move);
+            PlayerToMove.YourMove(GamePosition.DeepCopy());
+        }
+
+        private void BoardView_AskForFinish(object sender, Tuple<Square, Square> e)
+        {
+            int? Move = ConvertMove(e.Item1, e.Item2, GamePosition);
+            if (Move is null) BoardView.CancelMove();
+            else
+            {
+                if (PlayerToMove is HumanPlayer) PlayerToMove.MakeMove((int)Move);
+                else if (PlayerWaiting is HumanPlayer) { PlayerWaiting.PreMoves.Push((int)Move); }
+                else { /*Don't bother the comps! Let them play!*/ }
+            }
+        }
+        private int? ConvertMove(Square From, Square To, Position P)
+        {
+            IEnumerable<int> AppropriateMoves = P.LegalMoves().Where(m => PerfectChess.Move.FromSquare(m) == From.X + 8 * From.Y && PerfectChess.Move.ToSquare(m) == To.X + 8 * To.Y);
+            if (!AppropriateMoves.Any()) return null;
+            return AppropriateMoves.First();
+        }
+
+
+        private Player PlayerWhite;
+        private Player PlayerBlack;
+        private Position GamePosition;
+        private Form1 BoardView;
+
+        private Player PlayerToMove => (this.GamePosition.ColorToMove == Color.White) ? this.PlayerWhite : this.PlayerBlack;
+        private Player PlayerWaiting => (this.GamePosition.ColorToMove == Color.Black) ? this.PlayerWhite : this.PlayerBlack;
+    }
 }
