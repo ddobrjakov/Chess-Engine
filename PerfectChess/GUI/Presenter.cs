@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace PerfectChess
 {
@@ -191,26 +192,6 @@ namespace PerfectChess
             this.PlayerBlack.MakesMove += Player_MakesMove;
         }
 
-        private void BoardView_SquareTapped(object sender, Square S)
-        {
-            int Piece = GamePosition[S.X + 8 * S.Y];
-            if (Piece == 0) return;
-            if (PlayerToMove is EnginePlayer && ((Piece & Color.Mask) == ((PlayerToMove == PlayerWhite) ? Color.White : Color.Black))) return; 
-
-            List<int> Moves = GamePosition.LegalMoves();
-
-            List<Square> EmptyAvailibleSquares = new List<Square>();
-            List<Square> EnemyAvailibleSquares = new List<Square>();
-
-            foreach (int Move in Moves.Where(m => PerfectChess.Move.FromSquare(m) == S.X + 8 * S.Y))
-            {
-                if (PerfectChess.Move.ToPiece(Move) == 0)
-                    EmptyAvailibleSquares.Add(Square.Get(PerfectChess.Move.ToSquare(Move) % 8 + 1, PerfectChess.Move.ToSquare(Move) / 8 + 1));
-                else EnemyAvailibleSquares.Add(Square.Get(PerfectChess.Move.ToSquare(Move) % 8 + 1, PerfectChess.Move.ToSquare(Move) / 8 + 1));
-            }
-            BoardView.StartMove(S, EmptyAvailibleSquares, EnemyAvailibleSquares);
-        }
-
         private void BoardView_WantNewGame(object sender, int Players)
         {
             PlayerWhite = (((Players & 0b10) >> 1) == 1) ? (Player)(new HumanPlayer()) : (new EnginePlayer());
@@ -227,6 +208,99 @@ namespace PerfectChess
                 BoardView.BoardPanel.Flip();
 
             PlayerWhite.YourMove(GamePosition);
+        }
+        private void BoardView_SquareTapped(object sender, Square S)
+        {
+            if (PlayerToMove is EnginePlayer && PlayerWaiting is EnginePlayer) MessageBox.Show("Don't bother the comps! Let them play!");
+            int Piece = GamePosition[S.X + 8 * S.Y];
+            if (Piece == 0) return;
+            if (PlayerToMove is EnginePlayer && ((Piece & Color.Mask) == ((PlayerToMove == PlayerWhite) ? Color.White : Color.Black))) return;
+            if (PlayerToMove.IsThinking) return;
+            
+
+            List<int> Moves = GamePosition.LegalMoves();
+
+            List<Square> EmptyAvailibleSquares = new List<Square>();
+            List<Square> EnemyAvailibleSquares = new List<Square>();
+
+            foreach (int Move in Moves.Where(m => PerfectChess.Move.FromSquare(m) == S.X + 8 * S.Y))
+            {
+                if (PerfectChess.Move.ToPiece(Move) == 0)
+                    EmptyAvailibleSquares.Add(Square.Get(PerfectChess.Move.ToSquare(Move) % 8 + 1, PerfectChess.Move.ToSquare(Move) / 8 + 1));
+                else EnemyAvailibleSquares.Add(Square.Get(PerfectChess.Move.ToSquare(Move) % 8 + 1, PerfectChess.Move.ToSquare(Move) / 8 + 1));
+            }
+            BoardView.StartMove(S, EmptyAvailibleSquares, EnemyAvailibleSquares);
+        }
+        private void BoardView_AskForFinish(object sender, Tuple<Square, Square> e)
+        {
+            int? Move = ConvertMove(e.Item1, e.Item2, GamePosition);
+            if (Move is null) BoardView.CancelMove();
+            else
+            {
+                if (PlayerToMove is HumanPlayer) PlayerToMove.MakeMove((int)Move);
+                else if (PlayerWaiting is HumanPlayer) { PlayerWaiting.PreMoves.Push((int)Move); }
+                else { MessageBox.Show("Don't bother the comps! Let them play!"); }
+            }
+        }
+        private int? ConvertMove(Square From, Square To, Position P)
+        {
+            IEnumerable<int> AppropriateMoves = P.LegalMoves().Where(m => PerfectChess.Move.FromSquare(m) == From.X + 8 * From.Y && PerfectChess.Move.ToSquare(m) == To.X + 8 * To.Y);
+            if (!AppropriateMoves.Any()) return null;
+            return AppropriateMoves.First();
+        }
+
+        private void Player_MakesMove(object sender, int Move)
+        {
+            //Check for legality
+            if (!GamePosition.LegalMoves().Contains(Move))
+            {
+                return;
+            }
+
+            //Make the move
+            GamePosition.Make(Move);
+            if (PlayerWaiting is HumanPlayer) BoardView.FinishMove(Move);
+            else BoardView.PerformComputerMove(Move);
+
+            //Add visual move effects
+            ApplyMoveEffects();
+            if (GamePosition.GameFinished) return;
+
+            //Tell the other guy he can move
+            PlayerToMove.YourMove(GamePosition.DeepCopy());
+        }
+        private void ApplyMoveEffects()
+        {
+            //PlayerWaiting is the player who made the last move
+
+            //Check or mate
+            if (GamePosition.Check)
+            {
+                bool MovedIsHuman = PlayerWaiting is HumanPlayer;
+                bool LostIsHuman = PlayerToMove is HumanPlayer;
+                int ColorWin = (PlayerWaiting == PlayerWhite) ? Color.White : Color.Black;
+                if (GamePosition.Checkmate) BoardView.Checkmate(MovedIsHuman, LostIsHuman, ColorWin);
+                else BoardView.Check(true);
+            }
+            //Stalemate
+            else if (GamePosition.Stalemate) BoardView.Stalemate();
+
+
+            int WhiteMaterialAdvantage = CountMaterial();
+            BoardView.SetMaterial(WhiteMaterialAdvantage, -WhiteMaterialAdvantage);
+        }
+        private int CountMaterial()
+        {
+            int[] Res = new int[2] { 0, 0 };
+            for (int Color = PerfectChess.Color.White; Color <= PerfectChess.Color.Black; Color++)
+            {
+                Res[Color] += BitOperations.PopCount(GamePosition.PieceBitboard[Piece.Pawn | Color]);
+                Res[Color] += 3 * BitOperations.PopCount(GamePosition.PieceBitboard[Piece.Knight | Color]);
+                Res[Color] += 3 * BitOperations.PopCount(GamePosition.PieceBitboard[Piece.Bishop | Color]);
+                Res[Color] += 5 * BitOperations.PopCount(GamePosition.PieceBitboard[Piece.Rook | Color]);
+                Res[Color] += 9 * BitOperations.PopCount(GamePosition.PieceBitboard[Piece.Queen | Color]);
+            }
+            return Res[0] - Res[1];
         }
 
         private void BoardView_AskForUndo(object sender, EventArgs e)
@@ -246,37 +320,6 @@ namespace PerfectChess
                 GamePosition.UnMake();
                 BoardView.UndoMove((int)MoveToUndo);
             }
-        }
-
-        private void Player_MakesMove(object sender, int Move)
-        {
-            //Check for legality
-            //Make the move, tell the other guy he can move
-            if (!GamePosition.LegalMoves().Contains(Move)) return;
-            GamePosition.Make(Move);
-
-            if (PlayerWaiting is HumanPlayer) BoardView.FinishMove(Move);
-            else BoardView.PerformComputerMove(Move);
-
-            PlayerToMove.YourMove(GamePosition.DeepCopy());
-        }
-
-        private void BoardView_AskForFinish(object sender, Tuple<Square, Square> e)
-        {
-            int? Move = ConvertMove(e.Item1, e.Item2, GamePosition);
-            if (Move is null) BoardView.CancelMove();
-            else
-            {
-                if (PlayerToMove is HumanPlayer) PlayerToMove.MakeMove((int)Move);
-                else if (PlayerWaiting is HumanPlayer) { PlayerWaiting.PreMoves.Push((int)Move); }
-                else { /*Don't bother the comps! Let them play!*/ }
-            }
-        }
-        private int? ConvertMove(Square From, Square To, Position P)
-        {
-            IEnumerable<int> AppropriateMoves = P.LegalMoves().Where(m => PerfectChess.Move.FromSquare(m) == From.X + 8 * From.Y && PerfectChess.Move.ToSquare(m) == To.X + 8 * To.Y);
-            if (!AppropriateMoves.Any()) return null;
-            return AppropriateMoves.First();
         }
 
 

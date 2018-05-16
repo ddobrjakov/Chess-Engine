@@ -158,8 +158,12 @@ namespace PerfectChess
             BoardPanel.BackgroundImage = PreSavedBackground;
 
             //(PerfectChess.Move.FromPiece(Move) & Color.Mask)
-            TestOutput.Text = "You: " + PerfectChess.Move.Details(Move);
+            TestOutput.Text = "";//_cachedText;
+            TestOutput.Text += "You: " + PerfectChess.Move.Details(Move) + "\n";
+            TestOutput.SelectionStart = TestOutput.TextLength;
+            TestOutput.ScrollToCaret();
             TestOutput.Refresh();
+
             PerformMove(Move);
             MoveStartAllowed = false;
         }
@@ -218,7 +222,10 @@ namespace PerfectChess
         //Does the engine move
         public void PerformComputerMove(int Move)
         {
-            TestOutput.Text += "\nEngine: " + PerfectChess.Move.Details(Move);
+            TestOutput.Text += "Engine: " + PerfectChess.Move.Details(Move) + "\n";
+            TestOutput.SelectionStart = TestOutput.TextLength;
+            TestOutput.ScrollToCaret();
+
             PerformMove(Move);
         }
 
@@ -268,27 +275,56 @@ namespace PerfectChess
             BoardPanel.ResetSquare(From);
         }
 
-
+        public void Checkmate(bool MovedIsHuman, bool LostIsHuman, int ColorWin)
+        {
+            string winloss = "Checkmate!\n";
+            if (MovedIsHuman)
+            {
+                if (!LostIsHuman) winloss += "You won, congratulations!";
+                else winloss += (ColorWin == Color.White) ? "White wins!" : "Black wins!";
+            }
+            else
+            {
+                if (LostIsHuman) winloss += "You lost:(\n\n\n\n\n\n (hehehe)";
+                else winloss += (ColorWin == Color.White) ? "White wins!" : "Black wins!";
+            }
+            TestOutput.Text += winloss;
+            TestOutput.SelectionStart = TestOutput.TextLength;
+            TestOutput.ScrollToCaret();
+        }
         public void Checkmate(bool Win)
         {
             TestOutput.ForeColor = System.Drawing.Color.Red;
-            TestOutput.Text += "\nCheckmate!\n";
+            TestOutput.Text += "Checkmate!\n";
             string winloss = Win ? "You won, congratulations!" : "You lost:(\n\n\n\n\n\n (hehehe)";
             TestOutput.Text += winloss;
+
+            TestOutput.SelectionStart = TestOutput.TextLength;
+            TestOutput.ScrollToCaret();
+
         }
         public void Check(bool Win)
         {
             TestOutput.ForeColor = System.Drawing.Color.Red;
-            TestOutput.Text += "\nCheck!\n";
+            TestOutput.Text += "Check!\n";
+
+            TestOutput.SelectionStart = TestOutput.TextLength;
+            TestOutput.ScrollToCaret();
         }
         public void Stalemate()
         {
             TestOutput.ForeColor = System.Drawing.Color.Green;
-            TestOutput.Text += "\nStalemate! It's a draw\n";
+            TestOutput.Text += "Stalemate! It's a draw\n";
+
+            TestOutput.SelectionStart = TestOutput.TextLength;
+            TestOutput.ScrollToCaret();
         }
         public void Title(string Text)
         {
             this.Text = Text;
+
+            TestOutput.SelectionStart = TestOutput.TextLength;
+            TestOutput.ScrollToCaret();
         }
 
         /// <summary>
@@ -324,11 +360,30 @@ namespace PerfectChess
             MoveStartAllowed = false;
             MousePressed = false;
             ImageMoving = null;
+
+            SetMaterial(0, 0);
         }
 
         private void buttonFlip_Click(object sender, EventArgs e)
         {
             BoardPanel.Flip();
+            string tmp = Material1.Text;
+            Material1.Text = Material2.Text;
+            Material2.Text = tmp;
+        }
+
+        public void SetMaterial(int White, int Black)
+        {
+            if (!BoardPanel.Flipped)
+            {
+                Material1.Text = ((White > 0) ? "+" : "") + White.ToString();
+                Material2.Text = ((Black > 0) ? "+" : "") + Black.ToString();
+            }
+            else
+            {
+                Material2.Text = ((White > 0) ? "+" : "") + White.ToString();
+                Material1.Text = ((Black > 0) ? "+" : "") + Black.ToString();
+            }
         }
     }
 

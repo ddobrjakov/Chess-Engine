@@ -28,10 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.TestOutput = new System.Windows.Forms.RichTextBox();
             this.button1 = new System.Windows.Forms.Button();
             this.newGameButton = new System.Windows.Forms.Button();
             this.buttonFlip = new System.Windows.Forms.Button();
+            this.Material1 = new System.Windows.Forms.Label();
+            this.Material2 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // TestOutput
@@ -76,18 +79,44 @@
             this.buttonFlip.UseVisualStyleBackColor = true;
             this.buttonFlip.Click += new System.EventHandler(this.buttonFlip_Click);
             // 
+            // Material1
+            // 
+            this.Material1.AutoSize = true;
+            this.Material1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.Material1.ForeColor = System.Drawing.Color.White;
+            this.Material1.Location = new System.Drawing.Point(604, 674);
+            this.Material1.Name = "Material1";
+            this.Material1.Size = new System.Drawing.Size(23, 25);
+            this.Material1.TabIndex = 4;
+            this.Material1.Text = "0";
+            // 
+            // Material2
+            // 
+            this.Material2.AutoSize = true;
+            this.Material2.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.Material2.ForeColor = System.Drawing.Color.White;
+            this.Material2.Location = new System.Drawing.Point(604, 25);
+            this.Material2.Name = "Material2";
+            this.Material2.Size = new System.Drawing.Size(23, 25);
+            this.Material2.TabIndex = 5;
+            this.Material2.Text = "0";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1436, 744);
+            this.Controls.Add(this.Material2);
+            this.Controls.Add(this.Material1);
             this.Controls.Add(this.buttonFlip);
             this.Controls.Add(this.newGameButton);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.TestOutput);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "PerfectChess Engine";
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -97,6 +126,8 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button newGameButton;
         private System.Windows.Forms.Button buttonFlip;
+        private System.Windows.Forms.Label Material1;
+        private System.Windows.Forms.Label Material2;
     }
 }
 
