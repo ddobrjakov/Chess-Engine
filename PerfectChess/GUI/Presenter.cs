@@ -7,13 +7,13 @@ using System.Windows.Forms;
 
 namespace PerfectChess
 {
-    public class Presenter
+    public class PresenterOld
     {
         private Form1 BoardView;
         private Position Pos;
 
         private TestForm Test;
-        public Presenter(Form1 BoardView)
+        public PresenterOld(Form1 BoardView)
         {
             Test = new TestForm();
             //Test.Show();
@@ -173,9 +173,9 @@ namespace PerfectChess
 
 
 
-    public class Present
+    public class Presenter
     {
-        public Present(Form1 BoardView, Player PlayerWhite, Player PlayerBlack, Position StartPosition)
+        public Presenter(Form1 BoardView, Player PlayerWhite, Player PlayerBlack, Position StartPosition)
         {
             this.PlayerWhite = PlayerWhite;
             this.PlayerBlack = PlayerBlack;

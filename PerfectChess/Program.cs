@@ -19,7 +19,7 @@ namespace PerfectChess
 
             Form1 F = new Form1();
             //Presenter P = new Presenter(F); 
-            Present P = new Present(F, new HumanPlayer(), new EnginePlayer(), new Position());
+            Presenter P = new Presenter(F, new HumanPlayer(), new EnginePlayer(), new Position());
             Application.Run(F);
         }
     }

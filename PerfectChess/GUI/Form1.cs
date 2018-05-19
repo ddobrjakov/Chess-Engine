@@ -158,6 +158,7 @@ namespace PerfectChess
             BoardPanel.BackgroundImage = PreSavedBackground;
 
             //(PerfectChess.Move.FromPiece(Move) & Color.Mask)
+            TestOutput.ForeColor = SystemColors.WindowText;
             TestOutput.Text = "";//_cachedText;
             TestOutput.Text += "You: " + PerfectChess.Move.Details(Move) + "\n";
             TestOutput.SelectionStart = TestOutput.TextLength;
@@ -288,6 +289,7 @@ namespace PerfectChess
                 if (LostIsHuman) winloss += "You lost:(\n\n\n\n\n\n (hehehe)";
                 else winloss += (ColorWin == Color.White) ? "White wins!" : "Black wins!";
             }
+            TestOutput.ForeColor = System.Drawing.Color.Red;
             TestOutput.Text += winloss;
             TestOutput.SelectionStart = TestOutput.TextLength;
             TestOutput.ScrollToCaret();
@@ -355,7 +357,7 @@ namespace PerfectChess
                 if (P[i] != 0) BoardPanel.SetSquareImage(S, ViewModelConnector.PieceImage[P[i]]);
             }
             BoardPanel.Refresh();
-            TestOutput.Text = "";
+            TestOutput.Text = "";          
 
             MoveStartAllowed = false;
             MousePressed = false;

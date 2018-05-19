@@ -200,7 +200,7 @@ namespace PerfectChess
 
             if (Pos.ColorToMove == White)
             {
-                foreach (int Move in Pos.LegalMoves())
+                foreach (int Move in SortMoves(Pos))
                 {
                     Pos.Make(Move);
                     int score = AlphaBetaMin(Depth - 1, alpha - 1, beta);
@@ -224,7 +224,7 @@ namespace PerfectChess
             }
             else
             {
-                foreach (int Move in Pos.LegalMoves())
+                foreach (int Move in SortMoves(Pos))
                 {
                     Pos.Make(Move);
                     //+1 so that positions that are just as good as the current beta are counted to random generator
@@ -261,7 +261,7 @@ namespace PerfectChess
         {
             if (Depth == 0) return Evaluate();
             bool Moves = false;
-            foreach (int Move in Pos.LegalMoves())
+            foreach (int Move in SortMoves(Pos))//Pos.LegalMoves())
             {
                 Moves = true;
                 Pos.Make(Move);
@@ -286,7 +286,7 @@ namespace PerfectChess
             if (Depth == 0) return Evaluate();
 
             bool Moves = false;
-            foreach (int Move in Pos.LegalMoves())
+            foreach (int Move in SortMoves(Pos))
             {
                 Moves = true;
                 Pos.Make(Move);
@@ -306,6 +306,54 @@ namespace PerfectChess
 
 
             return beta;
+        }
+
+        private IEnumerable<int> SortMoves(Position P)
+        {
+            //List<int> SortedMoves = P.LegalMoves();
+            int[] Moves = P.LegalMoves().ToArray();
+            int[] MovesRating = new int[Moves.Length];
+            for (int i = 0; i < Moves.Length; i++)
+            {
+                MovesRating[i] = MoveRating(Moves[i], P);
+            }
+            Array.Sort(MovesRating, Moves);
+            //List<int> MovesRating = new List<int>
+            //foreach (int Move in SortedMoves)
+            //{
+            //
+            //    SortedMoves.Sort()
+            //    SortedMoves.Insert()
+            //}
+            //return SortedMoves;
+            return Moves.Reverse();
+        }
+        
+        /*private class MoveComparer : IComparer<int>
+        {
+            public MoveComparer(List<int> Moves)
+            {
+                foreach (int Move in Moves)
+                {
+                    MovesRating.Add(Move, MoveRating(Move));
+                }
+            }
+            public int Compare(int x, int y)
+            {
+                MovesRating.
+                throw new NotImplementedException();
+            }
+            Dictionary<int, int> MovesRating = new Dictionary<int, int>();
+        }*/
+        private int MoveRating(int M, Position P)
+        {
+            //if (Move.ToPiece(P.LastMove) 
+            //Encourage capturing, capturing piece should be smaller, captured - bigger
+            if (Move.ToPiece(M) != 0)
+            {
+                return Move.ToPiece(M) & Piece.Mask - Move.FromPiece(M) & Piece.Mask + 1;
+            }       
+            return 0;
         }
     }
 }
