@@ -53,8 +53,9 @@
     <Compile Include="BitOperations.cs" />
     <Compile Include="Core\Color.cs" />
     <Compile Include="Core\Move.cs" />
-    <Compile Include="Engine.cs" />
-    <Compile Include="Evaluation.cs" />
+    <Compile Include="Engine\Engine.cs" />
+    <Compile Include="Engine\EngineSettings.cs" />
+    <Compile Include="Engine\Evaluation.cs" />
     <Compile Include="GUI\Form1.cs">
       <SubType>Form</SubType>
     </Compile>

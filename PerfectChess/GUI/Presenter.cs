@@ -181,6 +181,7 @@ namespace PerfectChess
             this.PlayerBlack = PlayerBlack;
             this.GamePosition = StartPosition;
             this.BoardView = BoardView;
+            BoardView.SetStartPos(StartPosition);
 
             this.BoardView.AskForFinish += BoardView_AskForFinish;
             this.BoardView.AskForUndo += BoardView_AskForUndo;
@@ -320,6 +321,9 @@ namespace PerfectChess
                 GamePosition.UnMake();
                 BoardView.UndoMove((int)MoveToUndo);
             }
+
+            int WhiteMaterialAdvantage = CountMaterial();
+            BoardView.SetMaterial(WhiteMaterialAdvantage, -WhiteMaterialAdvantage);
         }
 
 

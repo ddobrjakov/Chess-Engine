@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using static PerfectChess.Piece;
 using static PerfectChess.Color;
 using static PerfectChess.Move;
+using System.Drawing.Drawing2D;
 
 namespace PerfectChess
 {
@@ -18,10 +19,45 @@ namespace PerfectChess
         public Form1()
         {
             InitializeComponent();
-            this.BackColor = ViewSettings.BACKGROUND_COLOR;
+            //this.BackColor = ViewSettings.BACKGROUND_COLOR;
+            //Bitmap background = new Bitmap(this.Width, this.Height);
+            //Graphics G = Graphics.FromImage(background);
+            //LinearGradientBrush brush = new LinearGradientBrush(new Point(0, 0), new Point(background.Width, 0), System.Drawing.Color.FromArgb(0x2c2c2c), System.Drawing.Color.FromArgb(0x1a1a1a));
+            //G.FillRectangle(brush, 0, 0, background.Width, background.Height);
+
+            Bitmap back = new Bitmap(this.Width, this.Height);
+            Graphics G = Graphics.FromImage(back);
+            LinearGradientBrush backbrush = new LinearGradientBrush(new Point(0, 0), new Point(0, back.Height), System.Drawing.Color.FromArgb(0x2c, 0x2c, 0x2c), System.Drawing.Color.FromArgb(0x1a, 0x1a, 0x1a));
+            G.FillRectangle(backbrush, 0, 0, back.Width, back.Height);
+            this.BackgroundImage = back;
+
+            //buttonUndo.BackgroundImage = back;
+            //newGameButton.ForeColor = System.Drawing.Color.Black;
+            SetGradientBackground(buttonUndo, new Point(0, 0), new Point(0, buttonUndo.Height), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));//System.Drawing.Color.FromArgb(0x81, 0xa8, 0xcb), System.Drawing.Color.FromArgb(0x44, 0x77, 0xa1)); //#81a8cb
+            SetGradientBackground(newGameButton, new Point(0, 0), new Point(0, newGameButton.Height), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));//System.Drawing.Color.FromArgb(0xbb, 0xaa, 0xaa), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f)); //#3D4850 3%, #313d45 4%, #232B30 100%
+            SetGradientBackground(buttonFlip, new Point(0, 0), new Point(buttonFlip.Width, buttonFlip.Height), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));//System.Drawing.Color.Gray, System.Drawing.Color.White);
+            //newGameButton.FlatAppearance.BorderColor = System.Drawing.Color.Black;// BorderSize = 0;
+            //newGameButton.FlatStyle = FlatStyle.Popup;
+            newGameButton.FlatStyle = FlatStyle.Flat;
+            newGameButton.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            newGameButton.FlatAppearance.BorderSize = 1;
+
+            buttonUndo.FlatStyle = FlatStyle.Flat;
+            buttonUndo.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            buttonUndo.FlatAppearance.BorderSize = 1;
+
+            buttonFlip.FlatStyle = FlatStyle.Flat;
+            buttonFlip.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            buttonFlip.FlatAppearance.BorderSize = 1;
+
+
 
             //Form Test = new TestForm();
             //Test.Show();
+            Material1.BackColor = System.Drawing.Color.FromArgb(0, System.Drawing.Color.White);
+            Material2.BackColor = System.Drawing.Color.FromArgb(0, System.Drawing.Color.White);
+            //SetGradientBackground(TestOutput, new Point(0, 0), new Point(0, 50), System.Drawing.Color.Black, System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));
+            TestOutput.BackColor = System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5);
 
             BoardPanel = new BoardPanel();
             BoardPanel.Location = new Point(50, 50);
@@ -31,8 +67,34 @@ namespace PerfectChess
             BoardPanel.MouseMove += BoardPanel_MouseMove;
             BoardPanel.MouseUp += BoardPanel_MouseUp;
 
+            BoardPanel.MouseEnter += BoardPanel_MouseEnter;
+            BoardPanel.MouseLeave += BoardPanel_MouseLeave;
+
             SetStartPos(new Position());
         }
+
+        private void BoardPanel_MouseLeave(object sender, EventArgs e)
+        {
+            this.Cursor = Cursors.Default;   
+        }
+
+        private void BoardPanel_MouseEnter(object sender, EventArgs e)
+        {
+            this.Cursor = Cursors.Hand;
+        }
+
+        private void SetGradientBackground(Control C, Point From, Point To, System.Drawing.Color FromC, System.Drawing.Color ToC)
+        {
+            Bitmap back = new Bitmap(C.Width, C.Height);
+            Graphics G = Graphics.FromImage(back);
+            LinearGradientBrush backbrush = new LinearGradientBrush(From, To, FromC, ToC);
+            G.FillRectangle(backbrush, 0, 0, back.Width, back.Height);
+            C.BackgroundImage = back;
+        }
+
+
+
+
         public BoardPanel BoardPanel { get; private set; }
         public void undoButton_Click(object sender, EventArgs e)
         {
@@ -223,6 +285,7 @@ namespace PerfectChess
         //Does the engine move
         public void PerformComputerMove(int Move)
         {
+            TestOutput.ForeColor = SystemColors.WindowText;
             TestOutput.Text += "Engine: " + PerfectChess.Move.Details(Move) + "\n";
             TestOutput.SelectionStart = TestOutput.TextLength;
             TestOutput.ScrollToCaret();
@@ -386,6 +449,53 @@ namespace PerfectChess
                 Material2.Text = ((White > 0) ? "+" : "") + White.ToString();
                 Material1.Text = ((Black > 0) ? "+" : "") + Black.ToString();
             }
+        }
+
+        private void newGameButton_MouseEnter(object sender, EventArgs e)
+        {
+            //newGameButton.UseVisualStyleBackColor = false;
+
+            SetGradientBackground(newGameButton, new Point(0, 0), new Point(0, newGameButton.Height), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5));
+            //newGameButton.ForeColor = System.Drawing.Color.GhostWhite;
+            newGameButton.FlatAppearance.BorderColor = System.Drawing.Color.GhostWhite;
+            this.Cursor = Cursors.Hand;
+        }
+
+        private void newGameButton_MouseLeave(object sender, EventArgs e)
+        {
+            SetGradientBackground(newGameButton, new Point(0, 0), new Point(0, newGameButton.Height), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));
+            //newGameButton.UseVisualStyleBackColor = true;
+            //newGameButton.ForeColor = SystemColors.WindowText;
+            newGameButton.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.Cursor = Cursors.Default;
+        }
+
+        private void buttonUndo_MouseEnter(object sender, EventArgs e)
+        {
+            SetGradientBackground(buttonUndo, new Point(0, 0), new Point(0, newGameButton.Height), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5));
+            buttonUndo.FlatAppearance.BorderColor = System.Drawing.Color.GhostWhite;
+            this.Cursor = Cursors.Hand;
+        }
+
+        private void buttonUndo_MouseLeave(object sender, EventArgs e)
+        {
+            SetGradientBackground(buttonUndo, new Point(0, 0), new Point(0, buttonUndo.Height), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));
+            buttonUndo.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.Cursor = Cursors.Default;
+        }
+
+        private void buttonFlip_MouseEnter(object sender, EventArgs e)
+        {
+            SetGradientBackground(buttonFlip, new Point(0, 0), new Point(buttonFlip.Width, buttonFlip.Height), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5));
+            buttonFlip.FlatAppearance.BorderColor = System.Drawing.Color.GhostWhite;
+            this.Cursor = Cursors.Hand;
+        }
+
+        private void buttonFlip_MouseLeave(object sender, EventArgs e)
+        {
+            SetGradientBackground(buttonFlip, new Point(0, 0), new Point(buttonFlip.Width, buttonFlip.Height), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));
+            buttonFlip.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.Cursor = Cursors.Default;
         }
     }
 

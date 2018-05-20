@@ -143,5 +143,6 @@ namespace PerfectChess
         {
             return Rook(Square, occupiedBitboard) | Bishop(Square, occupiedBitboard);
         }
+
     }
 }

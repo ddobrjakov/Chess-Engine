@@ -8,7 +8,7 @@ using static PerfectChess.Piece;
 
 namespace PerfectChess
 {
-    public class Engine
+    public partial class Engine
     {
         public Engine()
         {
@@ -189,11 +189,11 @@ namespace PerfectChess
         private int BestMoveAlphaBetaApproach(Position P)
         {
             this.Pos = P.DeepCopy();
-            int Depth = 5;
+            int Depth = Engine.Depth;
 
             int alpha = Evaluation.Min;
             int beta = Evaluation.Max;
-            int bestmove = -1;
+            int bestmove;
 
             //Dictionary used to store all the moves with it's evaluation as a key
             Dictionary<int, List<int>> BestMoves = new Dictionary<int, List<int>>();
@@ -203,13 +203,13 @@ namespace PerfectChess
                 foreach (int Move in SortMoves(Pos))
                 {
                     Pos.Make(Move);
-                    int score = AlphaBetaMin(Depth - 1, alpha - 1, beta);
+                    int score = AlphaBetaMin(Depth - 1, alpha - 1 - RandomisationMaxDifference, beta);
                     Pos.UnMake();
 
                     ///Test.ShowStats("\n" + PerfectChess.Move.Details(Move) + " — " + score + " (best: " + alpha + ")");
                     if (score > alpha)
                     {
-                        Test.ShowStats(" — New Best!");
+                        ///Test.ShowStats(" — New Best!");
                         alpha = score;
                     }
                     if (BestMoves.Keys.Contains(score)) BestMoves[score].Add(Move);
@@ -219,7 +219,13 @@ namespace PerfectChess
                 if (!BestMoves.Keys.Contains(alpha)) bestmove = -1;
                 else
                 {
-                    bestmove = BestMoves[alpha][R.Next(BestMoves[alpha].Count())];
+                    IEnumerable<int> PotentialMoves = Enumerable.Empty<int>();
+                    foreach (int Key in BestMoves.Keys.Where(key => ((key >= alpha - RandomisationMaxDifference) && key >= 0 && key <= Evaluation.CheckmateCost - 1000) || key == alpha))
+                        PotentialMoves = PotentialMoves.Concat(BestMoves[Key]);
+
+                    List<int> ListMoves = PotentialMoves.ToList();
+                    bestmove = ListMoves[R.Next(ListMoves.Count)];
+                    //bestmove = BestMoves[alpha][R.Next(BestMoves[alpha].Count())];
                 }
             }
             else
@@ -228,24 +234,33 @@ namespace PerfectChess
                 {
                     Pos.Make(Move);
                     //+1 so that positions that are just as good as the current beta are counted to random generator
-                    int score = AlphaBetaMax(Depth - 1, alpha, beta + 1);
+                    int score = AlphaBetaMax(Depth - 1, alpha, beta + 1 + RandomisationMaxDifference);
                     Pos.UnMake();
 
                     ///Test.ShowStats("\n" + PerfectChess.Move.Details(Move) + " — " + score + " (best: " + beta + ")");
                     if (score < beta)
                     {
-                        Test.ShowStats(" — New Best!");
+                        ///Test.ShowStats(" — New Best!");
                         beta = score;
                     }
                     if (BestMoves.Keys.Contains(score)) BestMoves[score].Add(Move);
                     else BestMoves.Add(score, new List<int> { Move });
                 }
 
+
+
+
                 //No moves
                 if (!BestMoves.Keys.Contains(beta)) bestmove = -1;
                 else
                 {
-                    bestmove = BestMoves[beta][R.Next(BestMoves[beta].Count())];
+                    IEnumerable<int> PotentialMoves = Enumerable.Empty<int>();
+                    foreach (int Key in BestMoves.Keys.Where(key => ((key <= beta + RandomisationMaxDifference) && key <= 0 && key >= -Evaluation.CheckmateCost + 1000) || key == beta))
+                        PotentialMoves = PotentialMoves.Concat(BestMoves[Key]);
+
+                    List<int> ListMoves = PotentialMoves.ToList();
+                    bestmove = ListMoves[R.Next(ListMoves.Count)];
+                    //bestmove = BestMoves[beta][R.Next(BestMoves[beta].Count())];
                     ///Test.ShowStats("\nFinal Best: " + Move.Details(bestmove) + " (" + beta + ")" + "\n");
                     ///string other = String.Empty;
                     ///other += "Randomly choosed from (" + BestMoves[beta].Count + "): \n";
@@ -257,6 +272,9 @@ namespace PerfectChess
             
             return bestmove;
         }
+
+
+
         private int AlphaBetaMax(int Depth, int alpha, int beta)
         {
             if (Depth == 0) return Evaluate();
@@ -276,7 +294,7 @@ namespace PerfectChess
             {
                 //Checkmate or Stalemate
                 if (Pos.IsInCheck(Pos.ColorToMove))
-                    return (Pos.ColorToMove == Black) ? 100000 : -100000;
+                    return (Pos.ColorToMove == Black) ? Evaluation.CheckmateCost - (Engine.Depth - Depth) : -Evaluation.CheckmateCost + (Engine.Depth - Depth);
                 else return 0;
             }
             return alpha;
@@ -300,7 +318,7 @@ namespace PerfectChess
             {
                 //Checkmate or Stalemate
                 if (Pos.IsInCheck(Pos.ColorToMove))
-                    return (Pos.ColorToMove == Black) ? Evaluation.CheckmateCost : -Evaluation.CheckmateCost;
+                    return (Pos.ColorToMove == Black) ? Evaluation.CheckmateCost - (Engine.Depth - Depth) : -Evaluation.CheckmateCost + (Engine.Depth - Depth);
                 else return 0;
             }
 
@@ -328,7 +346,18 @@ namespace PerfectChess
             //return SortedMoves;
             return Moves.Reverse();
         }
-        
+        private IEnumerable<int> FirstPlySortMoves(Position P)
+        {
+            int[] Moves = P.LegalMoves().ToArray();
+            int[] MovesRating = new int[Moves.Length];
+            for (int i = 0; i < Moves.Length; i++)
+            {
+                MovesRating[i] = FirstPlyMoveRating(Moves[i], P);
+            }
+            Array.Sort(MovesRating, Moves);
+            return Moves.Reverse();
+        }
+
         /*private class MoveComparer : IComparer<int>
         {
             public MoveComparer(List<int> Moves)
@@ -347,13 +376,59 @@ namespace PerfectChess
         }*/
         private int MoveRating(int M, Position P)
         {
-            //if (Move.ToPiece(P.LastMove) 
+            //Good captures first
+            if (Move.ToPiece(M) != 0)
+            {
+                int LVA_MVV = Move.ToPiece(M) & Piece.Mask - Move.FromPiece(M) & Piece.Mask;
+                if (LVA_MVV >= 0)
+                {
+                    if (P.AnyMoves && Move.ToSquare((int)(P.LastMove)) == Move.ToSquare(M)) return (LVA_MVV + 2) * 5 + 200;
+                    return (LVA_MVV + 2) * 5;
+                }
+                return (LVA_MVV - 2) * 5;
+                //int LastSquare = ((P.AnyMoves && Move.ToSquare((int)(P.LastMove)) == Move.ToSquare(M)) ? LVA_MVV > 0 ? 20 : 2)
+                //if (LVA_MVV < 0)
+                //{
+                //
+                //}
+            }
+            //if (P.Attacks(Move.ToSquare((int)(P.LastMove)), Move.FromSquare(M))) return 5;
+            return 0;
+
+
+
+            /*int add = 0;
+            if (P.Attacks(Move.ToSquare((int)(P.LastMove)), Move.FromSquare(M))) add += 2;
+            //if (P.AnyMoves && Move.ToSquare((int)(P.LastMove)) == Move.ToSquare(M))  
             //Encourage capturing, capturing piece should be smaller, captured - bigger
             if (Move.ToPiece(M) != 0)
             {
-                return Move.ToPiece(M) & Piece.Mask - Move.FromPiece(M) & Piece.Mask + 1;
+                return Move.ToPiece(M) & Piece.Mask - Move.FromPiece(M) & Piece.Mask + 1 + 
+                        ((P.AnyMoves && Move.ToSquare((int)(P.LastMove)) == Move.ToSquare(M)) ? ((Move.ToPiece((int)(P.LastMove)) != 0) ? 20 : 2) : 0) + add;
             }       
-            return 0;
+            return 0;*/
+        }
+        private int FirstPlyMoveRating(int M, Position P)
+        {
+            int addon = 0;
+            if (P.AnyMoves && P.Attacks(Move.ToSquare((int)(P.LastMove)), Move.FromSquare(M))) addon = 500;
+            if (Move.ToPiece(M) != 0)
+            {
+                int LVA_MVV = Move.ToPiece(M) & Piece.Mask - Move.FromPiece(M) & Piece.Mask;
+                if (LVA_MVV >= 0)
+                {
+                    if (P.AnyMoves && Move.ToSquare((int)(P.LastMove)) == Move.ToSquare(M)) return (LVA_MVV + 2) * 5 + 200 + addon;
+                    return (LVA_MVV + 2) * 5 + addon;
+                }
+                return (LVA_MVV - 2) * 5 + addon;
+                //int LastSquare = ((P.AnyMoves && Move.ToSquare((int)(P.LastMove)) == Move.ToSquare(M)) ? LVA_MVV > 0 ? 20 : 2)
+                //if (LVA_MVV < 0)
+                //{
+                //
+                //}
+            }
+            //if (P.Attacks(Move.ToSquare((int)(P.LastMove)), Move.FromSquare(M))) return 5;
+            return addon;
         }
     }
 }

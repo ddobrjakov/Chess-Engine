@@ -94,6 +94,11 @@ namespace PerfectChess
         private Stack<int> MoveHistory = new Stack<int>();
 
         /// <summary>
+        /// Returns if any moves were played in position
+        /// </summary>
+        public bool AnyMoves => MoveHistory.Any();
+
+        /// <summary>
         /// Returns the last move played
         /// </summary>
         public int? LastMove {
@@ -174,6 +179,25 @@ namespace PerfectChess
 
             return false;
         }
+
+        public bool Attacks(int FromSquare, int ToSquare)
+        {
+            //if (SquarePiece[FromSquare] == 0 || (SquarePiece[FromSquare] & Color.Mask) == (SquarePiece[ToSquare] & Color.Mask)) return false;
+            int piece = SquarePiece[FromSquare];
+            switch (piece & Piece.Mask)
+            {
+                case Piece.None: return false;
+                case Piece.Pawn: return (Attack.Pawn(SquarePiece[FromSquare] & Color.Mask, FromSquare) & (1UL << ToSquare)) != 0;
+                case Piece.Knight: return (Attack.Knight(FromSquare) & (1UL << ToSquare)) != 0;
+                case Piece.Bishop: return (Attack.Bishop(FromSquare, OccupiedBB) & (1UL << ToSquare)) != 0;
+                case Piece.Rook: return (Attack.Rook(FromSquare, OccupiedBB) & (1UL << ToSquare)) != 0;
+                case Piece.Queen: return (Attack.Queen(FromSquare, OccupiedBB) & (1UL << ToSquare)) != 0;
+                case Piece.King: return (Attack.King(FromSquare) & (1UL << ToSquare)) != 0;
+                default: throw new Exception();
+            }
+        }
+
+
 
         /// <summary>
         /// Returns if side is in check

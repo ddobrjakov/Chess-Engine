@@ -30,7 +30,7 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.TestOutput = new System.Windows.Forms.RichTextBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.buttonUndo = new System.Windows.Forms.Button();
             this.newGameButton = new System.Windows.Forms.Button();
             this.buttonFlip = new System.Windows.Forms.Button();
             this.Material1 = new System.Windows.Forms.Label();
@@ -47,20 +47,22 @@
             this.TestOutput.TabIndex = 0;
             this.TestOutput.Text = "";
             // 
-            // button1
+            // buttonUndo
             // 
-            this.button1.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.button1.Location = new System.Drawing.Point(809, 55);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(205, 55);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "Undo Move";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.undoButton_Click);
+            this.buttonUndo.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
+            this.buttonUndo.Location = new System.Drawing.Point(809, 55);
+            this.buttonUndo.Name = "buttonUndo";
+            this.buttonUndo.Size = new System.Drawing.Size(205, 55);
+            this.buttonUndo.TabIndex = 1;
+            this.buttonUndo.Text = "Undo Move";
+            this.buttonUndo.UseVisualStyleBackColor = true;
+            this.buttonUndo.Click += new System.EventHandler(this.undoButton_Click);
+            this.buttonUndo.MouseEnter += new System.EventHandler(this.buttonUndo_MouseEnter);
+            this.buttonUndo.MouseLeave += new System.EventHandler(this.buttonUndo_MouseLeave);
             // 
             // newGameButton
             // 
-            this.newGameButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.newGameButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F);
             this.newGameButton.Location = new System.Drawing.Point(1052, 55);
             this.newGameButton.Name = "newGameButton";
             this.newGameButton.Size = new System.Drawing.Size(218, 55);
@@ -68,9 +70,12 @@
             this.newGameButton.Text = "New Game";
             this.newGameButton.UseVisualStyleBackColor = true;
             this.newGameButton.Click += new System.EventHandler(this.newGameButton_Click);
+            this.newGameButton.MouseEnter += new System.EventHandler(this.newGameButton_MouseEnter);
+            this.newGameButton.MouseLeave += new System.EventHandler(this.newGameButton_MouseLeave);
             // 
             // buttonFlip
             // 
+            this.buttonFlip.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.buttonFlip.Location = new System.Drawing.Point(63, 674);
             this.buttonFlip.Name = "buttonFlip";
             this.buttonFlip.Size = new System.Drawing.Size(143, 33);
@@ -78,6 +83,8 @@
             this.buttonFlip.Text = "Flip the board";
             this.buttonFlip.UseVisualStyleBackColor = true;
             this.buttonFlip.Click += new System.EventHandler(this.buttonFlip_Click);
+            this.buttonFlip.MouseEnter += new System.EventHandler(this.buttonFlip_MouseEnter);
+            this.buttonFlip.MouseLeave += new System.EventHandler(this.buttonFlip_MouseLeave);
             // 
             // Material1
             // 
@@ -110,7 +117,7 @@
             this.Controls.Add(this.Material1);
             this.Controls.Add(this.buttonFlip);
             this.Controls.Add(this.newGameButton);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.buttonUndo);
             this.Controls.Add(this.TestOutput);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
@@ -123,7 +130,7 @@
         #endregion
 
         private System.Windows.Forms.RichTextBox TestOutput;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button buttonUndo;
         private System.Windows.Forms.Button newGameButton;
         private System.Windows.Forms.Button buttonFlip;
         private System.Windows.Forms.Label Material1;

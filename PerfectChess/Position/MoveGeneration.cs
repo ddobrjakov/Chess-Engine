@@ -27,12 +27,12 @@ namespace PerfectChess
             //textFile.Close();
 
             //Captures
-            GeneratePawnCaptures(moves);
-            GenerateKnightCaptures(moves);
-            GenerateBishopCaptures(moves);
-            GenerateRookCaptures(moves);
-            GenerateQueenCaptures(moves);
-            GenerateKingCaptures(moves);
+            //GeneratePawnCaptures(moves);
+            //GenerateKnightCaptures(moves);
+            //GenerateBishopCaptures(moves);
+            //GenerateRookCaptures(moves);
+            //GenerateQueenCaptures(moves);
+            //GenerateKingCaptures(moves);
 
 
             //Silent Moves
@@ -121,6 +121,8 @@ namespace PerfectChess
             return res;
         }
 
+
+        /*
         /// <summary>
         /// Generates all legal capture moves for given type of piece in current position
         /// </summary>
@@ -142,7 +144,8 @@ namespace PerfectChess
                 UInt64 attackBB = Attack.Pawn(We, PawnSquare);
                 capturesBB |= enemyBB & attackBB;
             }*/
-        }
+        /*}
+    *
 
         private void GeneratePawnCaptures(List<int> moves)
         {
@@ -177,7 +180,7 @@ namespace PerfectChess
                 }
                 
             }*/        
-        }
+        /*}
         private void GenerateKnightCaptures(List<int> moves)
         {
 
@@ -198,7 +201,7 @@ namespace PerfectChess
         {
 
         }
-
+        */
 
 
         private void GeneratePawnMoves(List<int> moves)
