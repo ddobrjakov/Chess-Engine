@@ -245,7 +245,7 @@ namespace PerfectChess
         {
             PromotionForm Prom = new PromotionForm(Color);
             Prom.StartPosition = FormStartPosition.Manual;
-            Prom.Location = MousePosition;
+            Prom.Location = new Point(MousePosition.X - ViewSettings.SQUARESIZE * 4, MousePosition.Y - ViewSettings.SQUARESIZE);
             Prom.ShowDialog();
             return Prom.PieceChosen;
         }
