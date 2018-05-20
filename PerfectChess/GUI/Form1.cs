@@ -241,6 +241,15 @@ namespace PerfectChess
             MoveStartAllowed = false;
         }
 
+        public int SelectPromotionPiece(int Color)
+        {
+            PromotionForm Prom = new PromotionForm(Color);
+            Prom.StartPosition = FormStartPosition.Manual;
+            Prom.Location = MousePosition;
+            Prom.ShowDialog();
+            return Prom.PieceChosen;
+        }
+
         //Undoing the last move
         public event EventHandler AskForUndo;
         public void UndoMove(int MoveToUndo)

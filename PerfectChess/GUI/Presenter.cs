@@ -247,6 +247,14 @@ namespace PerfectChess
         {
             IEnumerable<int> AppropriateMoves = P.LegalMoves().Where(m => PerfectChess.Move.FromSquare(m) == From.X + 8 * From.Y && PerfectChess.Move.ToSquare(m) == To.X + 8 * To.Y);
             if (!AppropriateMoves.Any()) return null;
+
+            if (AppropriateMoves.Count() > 1)
+            {
+                int ChosenPiece = BoardView.SelectPromotionPiece(GamePosition.ColorToMove);
+                if (ChosenPiece == 0) return null;
+                AppropriateMoves = AppropriateMoves.Where(move => Move.PromotionPiece(move) == ChosenPiece);
+                if (!AppropriateMoves.Any() || AppropriateMoves.Count() > 1) { MessageBox.Show("Произошло что-то странное"); return null; }
+            }
             return AppropriateMoves.First();
         }
 

@@ -74,6 +74,12 @@
     <Compile Include="GUI\NewGameForm.Designer.cs">
       <DependentUpon>NewGameForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\PromotionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\PromotionForm.Designer.cs">
+      <DependentUpon>PromotionForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\ViewModelConnector.cs" />
     <Compile Include="GUI\ViewSettings.cs" />
     <Compile Include="Position\MakeUnmake.cs" />
@@ -92,6 +98,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\NewGameForm.resx">
       <DependentUpon>NewGameForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\PromotionForm.resx">
+      <DependentUpon>PromotionForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
