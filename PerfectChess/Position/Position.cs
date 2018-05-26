@@ -197,6 +197,15 @@ namespace PerfectChess
             }
         }
 
+        /// <summary>
+        /// Returns square of king of given color
+        /// </summary>
+        /// <param name="Color"></param>
+        /// <returns></returns>
+        public int KingSquare(int Color)
+        {
+            return BitOperations.OnlyBitIndex(PieceBitboard[Color | King]);
+        }
 
 
         /// <summary>

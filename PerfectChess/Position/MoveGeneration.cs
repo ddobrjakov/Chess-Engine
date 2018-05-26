@@ -12,6 +12,9 @@ namespace PerfectChess
     {
         public List<int> LegalMoves()
         {
+            bool Check = IsInCheck(ColorToMove);
+
+
             List<int> moves = new List<int>();
             GenerateCastleMoves(moves);
             GenerateEnPassantMoves(moves);
@@ -34,13 +37,13 @@ namespace PerfectChess
             //GenerateQueenCaptures(moves);
             //GenerateKingCaptures(moves);
 
-
+            UInt64 PinnedPieces = GetPinnedPieces();
             //Silent Moves
-            GeneratePawnMoves(moves);
+            GeneratePawnMoves(moves, PinnedPieces, Check);
             GenerateKnightMoves(moves);
-            GenerateBishopMoves(moves);
-            GenerateRookMoves(moves);
-            GenerateQueenMoves(moves);
+            GenerateBishopMoves(moves, PinnedPieces, Check);
+            GenerateRookMoves(moves, PinnedPieces, Check);
+            GenerateQueenMoves(moves, PinnedPieces, Check);
             GenerateKingMoves(moves);
 
             return moves;
@@ -204,7 +207,7 @@ namespace PerfectChess
         */
 
 
-        private void GeneratePawnMoves(List<int> moves)
+        private void GeneratePawnMoves(List<int> moves, UInt64 PinnedPieces, bool Check)
         {
             int ourColor = ColorToMove;
             UInt64 ourPieces = PieceBitboard[ourColor | Pawn];
@@ -214,6 +217,10 @@ namespace PerfectChess
             {
                 //Getting the moving piece square
                 int FromSquare = BitOperations.PopLS(ref ourPieces);
+
+                //Checking for pin
+                bool Pinned = ((PinnedPieces & (1UL << FromSquare)) != 0) ? true : false; 
+
 
                 //One square advance
                 int ToSquare = FromSquare + 8 - 16 * ColorToMove;
@@ -234,7 +241,8 @@ namespace PerfectChess
                     ToSquare = BitOperations.PopLS(ref moveBitboard);
                     int CapturedPiece = SquarePiece[ToSquare];
 
-                    if (IsLegal(FromSquare, ToSquare))
+                    bool Legal = (Check) ? IsLegal(FromSquare, ToSquare) : (!Pinned || Bitboard.Aligned(KingSquare(ColorToMove), FromSquare, ToSquare));
+                    if (Legal)//(IsLegal(FromSquare, ToSquare))
                     {
                         if (((1UL << ToSquare) & (Bitboard.Rank1BB | Bitboard.Rank8BB)) != 0) //Check for promotion
                         {
@@ -324,7 +332,7 @@ namespace PerfectChess
                 }
             }
         }
-        private void GenerateBishopMoves(List<int> moves)
+        private void GenerateBishopMoves(List<int> moves, UInt64 PinnedPieces, bool Check)
         {
             int ourColor = ColorToMove;
             UInt64 ourPieces = PieceBitboard[ourColor | Bishop];
@@ -335,6 +343,9 @@ namespace PerfectChess
                 //Getting the moving piece square
                 int FromSquare = BitOperations.PopLS(ref ourPieces);
 
+                //Checking for pin
+                bool Pinned = ((PinnedPieces & (1UL << FromSquare)) != 0) ? true : false;
+
                 UInt64 moveBitboard = targetBitboard & Attack.Bishop(FromSquare, OccupiedBB);
                 while (moveBitboard != 0)
                 {
@@ -342,14 +353,15 @@ namespace PerfectChess
                     Int32 ToSquare = BitOperations.PopLS(ref moveBitboard);
                     int CapturedPiece = SquarePiece[ToSquare];
 
-                    if (IsLegal(FromSquare, ToSquare))
+                    bool Legal = (Check) ? IsLegal(FromSquare, ToSquare) : (!Pinned || Bitboard.Aligned(KingSquare(ColorToMove), FromSquare, ToSquare));
+                    if (Legal)//(IsLegal(FromSquare, ToSquare))
                     {
                         moves.Add(Move.Create(FromSquare, ToSquare, ColorToMove | Bishop, CapturedPiece));
                     }
                 }
             }
         }
-        private void GenerateRookMoves(List<int> moves)
+        private void GenerateRookMoves(List<int> moves, UInt64 PinnedPieces, bool Check)
         {
             int ourColor = ColorToMove;
             UInt64 ourPieces = PieceBitboard[ourColor | Rook];
@@ -360,6 +372,9 @@ namespace PerfectChess
                 //Getting the moving piece square
                 int FromSquare = BitOperations.PopLS(ref ourPieces);
 
+                //Checking for pin
+                bool Pinned = ((PinnedPieces & (1UL << FromSquare)) != 0) ? true : false;
+
                 UInt64 moveBitboard = targetBitboard & Attack.Rook(FromSquare, OccupiedBB);
                 while (moveBitboard != 0)
                 {
@@ -367,14 +382,15 @@ namespace PerfectChess
                     Int32 ToSquare = BitOperations.PopLS(ref moveBitboard);
                     int CapturedPiece = SquarePiece[ToSquare];
 
-                    if (IsLegal(FromSquare, ToSquare))
+                    bool Legal = (Check) ? IsLegal(FromSquare, ToSquare) : (!Pinned || Bitboard.Aligned(KingSquare(ColorToMove), FromSquare, ToSquare));
+                    if (Legal)//(IsLegal(FromSquare, ToSquare))
                     {
                         moves.Add(Move.Create(FromSquare, ToSquare, ColorToMove | Rook, CapturedPiece));
                     }
                 }
             }
         }
-        private void GenerateQueenMoves(List<int> moves)
+        private void GenerateQueenMoves(List<int> moves, UInt64 PinnedPieces, bool Check)
         {
             int ourColor = ColorToMove;
             UInt64 ourPieces = PieceBitboard[ourColor | Queen];
@@ -385,6 +401,9 @@ namespace PerfectChess
                 //Getting the moving piece square
                 int FromSquare = BitOperations.PopLS(ref ourPieces);
 
+                //Checking for pin
+                bool Pinned = ((PinnedPieces & (1UL << FromSquare)) != 0) ? true : false;
+
                 UInt64 moveBitboard = targetBitboard & Attack.Queen(FromSquare, OccupiedBB);
                 while (moveBitboard != 0)
                 {
@@ -392,7 +411,8 @@ namespace PerfectChess
                     Int32 ToSquare = BitOperations.PopLS(ref moveBitboard);
                     int CapturedPiece = SquarePiece[ToSquare];
 
-                    if (IsLegal(FromSquare, ToSquare))
+                    bool Legal = (Check) ? IsLegal(FromSquare, ToSquare) : (!Pinned || Bitboard.Aligned(KingSquare(ColorToMove), FromSquare, ToSquare));
+                    if (Legal)//(IsLegal(FromSquare, ToSquare))
                     {
                         moves.Add(Move.Create(FromSquare, ToSquare, ColorToMove | Queen, CapturedPiece));
                     }
@@ -448,5 +468,53 @@ namespace PerfectChess
                 }
             }
         }
+
+
+
+
+        private UInt64 GetPinnedPieces()
+        {
+            UInt64 PinnedPieces = 0;
+
+
+            int KingSq = KingSquare(ColorToMove);
+
+            //Sliding pieces
+            UInt64 blockingPieces = 0;
+            blockingPieces = Attack.Bishop(KingSq, OccupiedBB) & PieceBitboard[ColorToMove];
+            UInt64 XRayBishopAttacks = Attack.Bishop(KingSq, OccupiedBB ^ blockingPieces);
+            UInt64 BishopAttackers = XRayBishopAttacks & (PieceBitboard[(1 - ColorToMove) | Bishop] | PieceBitboard[(1 - ColorToMove) | Queen]);
+            while (BishopAttackers != 0)
+            {
+                int Attacker = BitOperations.PopLS(ref BishopAttackers);
+                PinnedPieces ^= Bitboard.SquaresBetween[Attacker][KingSq] & blockingPieces;
+            }
+
+            blockingPieces = Attack.Rook(KingSq, OccupiedBB) & PieceBitboard[ColorToMove];
+            UInt64 XRayRookAttacks = Attack.Rook(KingSq, OccupiedBB ^ blockingPieces);
+            UInt64 RookAttackers = XRayRookAttacks & (PieceBitboard[(1 - ColorToMove) | Rook] | PieceBitboard[(1 - ColorToMove) | Queen]);
+            while (RookAttackers != 0)
+            {
+                int Attacker = BitOperations.PopLS(ref RookAttackers);
+                PinnedPieces ^= Bitboard.SquaresBetween[Attacker][KingSq] & blockingPieces;
+            }
+
+
+            //PinnedPieces ^= Attack.Bishop(KingSq, OccupiedBB ^ blockingPieces) & blockingPieces;
+
+
+
+            //Bitboard.Axes[King];
+            //OccupiedBB 
+
+
+            return PinnedPieces;
+        }
+
+        //private UInt64 XRayBishopAttacks(int FromSquare)
+        //{
+        //    UInt64 blockingPieces = Attack.Bishop(Square, OccupiedBB) & PieceBitboard[ColorToMove];
+        //    return Attack.Bishop(Square, OccupiedBB ^ blockingPieces) & blockingPieces;
+        //}
     }
 }

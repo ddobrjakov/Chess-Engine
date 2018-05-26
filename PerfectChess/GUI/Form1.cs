@@ -25,11 +25,19 @@ namespace PerfectChess
             //LinearGradientBrush brush = new LinearGradientBrush(new Point(0, 0), new Point(background.Width, 0), System.Drawing.Color.FromArgb(0x2c2c2c), System.Drawing.Color.FromArgb(0x1a1a1a));
             //G.FillRectangle(brush, 0, 0, background.Width, background.Height);
 
-            Bitmap back = new Bitmap(this.Width, this.Height);
-            Graphics G = Graphics.FromImage(back);
-            LinearGradientBrush backbrush = new LinearGradientBrush(new Point(0, 0), new Point(0, back.Height), System.Drawing.Color.FromArgb(0x2c, 0x2c, 0x2c), System.Drawing.Color.FromArgb(0x1a, 0x1a, 0x1a));
-            G.FillRectangle(backbrush, 0, 0, back.Width, back.Height);
-            this.BackgroundImage = back;
+            //Bitmap back = new Bitmap(this.Width, this.Height);
+            //Graphics G = Graphics.FromImage(back);
+            //LinearGradientBrush backbrush = new LinearGradientBrush(new Point(0, 0), new Point(0, back.Height), System.Drawing.Color.FromArgb(0x2c, 0x2c, 0x2c), System.Drawing.Color.FromArgb(0x1a, 0x1a, 0x1a));
+            //G.FillRectangle(backbrush, 0, 0, back.Width, back.Height);
+            //this.BackgroundImage = back;
+
+            //this.BackColor = System.Drawing.Color.Yellow;
+            SetGradientBackground(this, new Point(0, 0), new Point(0, this.Height), System.Drawing.Color.FromArgb(0x2c, 0x2c, 0x2c), System.Drawing.Color.FromArgb(0x1a, 0x1a, 0x1a));
+            //this.BackgroundImage = Image.FromFile("../../../images/Хрень.jpg");
+            //this.BackgroundImageLayout = ImageLayout.Stretch;
+            
+            //SetGradientBackground(this, new Point(0, 0), new Point(100, 100), System.Drawing.Color.Yellow, System.Drawing.Color.Green);
+
 
             //buttonUndo.BackgroundImage = back;
             //newGameButton.ForeColor = System.Drawing.Color.Black;
@@ -91,8 +99,6 @@ namespace PerfectChess
             G.FillRectangle(backbrush, 0, 0, back.Width, back.Height);
             C.BackgroundImage = back;
         }
-
-
 
 
         public BoardPanel BoardPanel { get; private set; }
@@ -469,7 +475,6 @@ namespace PerfectChess
             newGameButton.FlatAppearance.BorderColor = System.Drawing.Color.GhostWhite;
             this.Cursor = Cursors.Hand;
         }
-
         private void newGameButton_MouseLeave(object sender, EventArgs e)
         {
             SetGradientBackground(newGameButton, new Point(0, 0), new Point(0, newGameButton.Height), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));
@@ -485,7 +490,6 @@ namespace PerfectChess
             buttonUndo.FlatAppearance.BorderColor = System.Drawing.Color.GhostWhite;
             this.Cursor = Cursors.Hand;
         }
-
         private void buttonUndo_MouseLeave(object sender, EventArgs e)
         {
             SetGradientBackground(buttonUndo, new Point(0, 0), new Point(0, buttonUndo.Height), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));
@@ -499,7 +503,6 @@ namespace PerfectChess
             buttonFlip.FlatAppearance.BorderColor = System.Drawing.Color.GhostWhite;
             this.Cursor = Cursors.Hand;
         }
-
         private void buttonFlip_MouseLeave(object sender, EventArgs e)
         {
             SetGradientBackground(buttonFlip, new Point(0, 0), new Point(buttonFlip.Width, buttonFlip.Height), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));

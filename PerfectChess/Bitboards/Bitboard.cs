@@ -26,7 +26,41 @@ namespace PerfectChess
                 Diagonals[squareIndex] = RayNE[squareIndex] | RaySE[squareIndex] | RaySW[squareIndex] | RayNW[squareIndex];
                 Square[squareIndex] = 1UL << squareIndex;
             }
+
+            for (int squareIndex1 = 0; squareIndex1 < 64; squareIndex1++)
+            {
+                SquaresBetween[squareIndex1] = new UInt64[64];
+                for (int squareIndex2 = 0; squareIndex2 < 64; squareIndex2++)
+                {
+                    if ((RayN[squareIndex1] & (1UL << squareIndex2)) != 0) SquaresBetween[squareIndex1][squareIndex2] = RayN[squareIndex1] ^ RayN[squareIndex2] ^ (1UL << squareIndex2);
+                    if ((RayE[squareIndex1] & (1UL << squareIndex2)) != 0) SquaresBetween[squareIndex1][squareIndex2] = RayE[squareIndex1] ^ RayE[squareIndex2] ^ (1UL << squareIndex2);
+                    if ((RayS[squareIndex1] & (1UL << squareIndex2)) != 0) SquaresBetween[squareIndex1][squareIndex2] = RayS[squareIndex1] ^ RayS[squareIndex2] ^ (1UL << squareIndex2);
+                    if ((RayW[squareIndex1] & (1UL << squareIndex2)) != 0) SquaresBetween[squareIndex1][squareIndex2] = RayW[squareIndex1] ^ RayW[squareIndex2] ^ (1UL << squareIndex2);
+                    if ((RayNE[squareIndex1] & (1UL << squareIndex2)) != 0) SquaresBetween[squareIndex1][squareIndex2] = RayNE[squareIndex1] ^ RayNE[squareIndex2] ^ (1UL << squareIndex2);
+                    if ((RaySE[squareIndex1] & (1UL << squareIndex2)) != 0) SquaresBetween[squareIndex1][squareIndex2] = RaySE[squareIndex1] ^ RaySE[squareIndex2] ^ (1UL << squareIndex2);
+                    if ((RaySW[squareIndex1] & (1UL << squareIndex2)) != 0) SquaresBetween[squareIndex1][squareIndex2] = RaySW[squareIndex1] ^ RaySW[squareIndex2] ^ (1UL << squareIndex2);
+                    if ((RayNW[squareIndex1] & (1UL << squareIndex2)) != 0) SquaresBetween[squareIndex1][squareIndex2] = RayNW[squareIndex1] ^ RayNW[squareIndex2] ^ (1UL << squareIndex2);
+                }
+            }
         }
+
+        public static readonly UInt64[][] SquaresBetween = new UInt64[64][];
+        public static bool Aligned(int Square1, int Square2, int Square3)
+        {
+            double dydx21 = (double)(Y(Square2) - Y(Square1)) / (X(Square2) - X(Square1));
+            double dydx32 = (double)(Y(Square3) - Y(Square2)) / (X(Square3) - X(Square2));
+            return dydx21 == dydx32;
+        }
+        public static int X(int square)
+        {
+            return square & 7;
+        }
+        public static int Y(int square)
+        {
+            return square >> 3;
+        }
+
+
         public static readonly UInt64[] RayN = new UInt64[64];
         public static readonly UInt64[] RayE = new UInt64[64];
         public static readonly UInt64[] RayS = new UInt64[64];
@@ -45,6 +79,7 @@ namespace PerfectChess
                 bitboard |= GetRayBitboard(square + dx + 8 * dy, dx, dy);
             return bitboard;
         }
+
 
         public static readonly UInt64[] Diagonals = new UInt64[64];
         public static readonly UInt64[] Axes = new UInt64[64];
