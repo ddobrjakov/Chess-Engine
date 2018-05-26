@@ -16,7 +16,7 @@ namespace PerfectChess
 
 
             List<int> moves = new List<int>();
-            GenerateCastleMoves(moves);
+            if (!Check) GenerateCastleMoves(moves);
             GenerateEnPassantMoves(moves);
 
             //var F = System.IO.File.Create(@"C:\programming\moves.txt");
@@ -37,7 +37,7 @@ namespace PerfectChess
             //GenerateQueenCaptures(moves);
             //GenerateKingCaptures(moves);
 
-            UInt64 PinnedPieces = GetPinnedPieces();
+            UInt64 PinnedPieces = (Check) ? 0 : GetPinnedPieces();
             //Silent Moves
             GeneratePawnMoves(moves, PinnedPieces, Check);
             GenerateKnightMoves(moves);
@@ -50,8 +50,8 @@ namespace PerfectChess
         }
         private void GenerateCastleMoves(List<int> moves)
         {
-            if (!IsInCheck(ColorToMove))
-            {
+            //if (!IsInCheck(ColorToMove))
+            //{
                 int preIndex = 56 * ColorToMove;
 
                 if (CastleLongIndex[ColorToMove] == 1/*CanCastleLong[ColorToMove]*/ && (SquarePiece[1 + preIndex] | SquarePiece[2 + preIndex] | SquarePiece[3 + preIndex]) == None)
@@ -61,7 +61,7 @@ namespace PerfectChess
                 if (CastleShortIndex[ColorToMove] == 1/*CanCastleShort[ColorToMove]*/ && (SquarePiece[5 + preIndex] | SquarePiece[6 + preIndex]) == None)
                     if (!IsAttacked(ColorToMove, 5 + preIndex) && !IsAttacked(ColorToMove, 6 + preIndex))
                         moves.Add(Move.Create(4 + preIndex, 6 + preIndex, ColorToMove | King, None, SpecCastling));
-            }
+            //}
         }
         private void GenerateEnPassantMoves(List<int> moves)
         {
