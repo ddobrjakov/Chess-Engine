@@ -143,6 +143,9 @@ namespace PerfectChess
             BoardPanel.MarkAttacked(EnemyAvailibleSquares);
             Identifier = BoardPanel.StartMove(FROM);//MousePosition);
 
+            Point e = BoardPanel.PointToClient(MousePosition);//new Point(100,100);
+            BoardPanel.ContinueMove(Identifier, new Point(e.X - ViewSettings.SQUARESIZE / 2, e.Y - ViewSettings.SQUARESIZE / 2));
+
             BoardPanel.Refresh();
             /*
             //Сохранили изображение что мы будем двигать
@@ -253,7 +256,7 @@ namespace PerfectChess
 
             BoardPanel.DeleteMove(Identifier, false);
             PerformMove(Move);
-            BoardPanel.DeleteEffects();
+            BoardPanel.DeleteEffects(false);
             BoardPanel.ShowLastMove(Square.Get(PerfectChess.Move.FromSquare(Move)), Square.Get(PerfectChess.Move.ToSquare(Move)));
             BoardPanel.Refresh();
 
@@ -265,7 +268,7 @@ namespace PerfectChess
             //BoardPanel.BackgroundImage = PreSavedBackground;
             //BoardPanel.Invalidate();
             BoardPanel.DeleteMove(Identifier);
-            BoardPanel.DeleteEffects();
+            BoardPanel.DeleteMarkedEffects();
 
             BoardPanel.Refresh();
 
@@ -289,7 +292,7 @@ namespace PerfectChess
         {
             Square TO = Square.Get(ToSquare(MoveToUndo));
             Square FROM = Square.Get(FromSquare(MoveToUndo));
-
+            BoardPanel.DeleteEffects();
             if (Castling(MoveToUndo))
             {
                 Square ROOK_TO = Square.Get((FromSquare(MoveToUndo) + ToSquare(MoveToUndo)) / 2);
@@ -315,6 +318,7 @@ namespace PerfectChess
 
             //Undoing the main part of the move
             PerformPrimitiveMove(TO, FROM);
+            BoardPanel.ShowLastMove(FROM, TO);
             if (ToPiece(MoveToUndo) != 0)
             {
                 //BoardPanel.SetSquareImage(TO, ViewModelConnector.PieceImage[ToPiece(MoveToUndo)]);
@@ -337,7 +341,7 @@ namespace PerfectChess
 
             //BoardPanel.Restore();
             PerformMove(Move);
-            BoardPanel.DeleteEffects();
+            BoardPanel.DeleteEffects(false);
             BoardPanel.ShowLastMove(Square.Get(PerfectChess.Move.FromSquare(Move)), Square.Get(PerfectChess.Move.ToSquare(Move)));
             //BoardPanel.DrawBorder(Square.Get(PerfectChess.Move.FromSquare(Move)), System.Drawing.Color.Green);
             //BoardPanel.DrawBorder(Square.Get(PerfectChess.Move.ToSquare(Move)), System.Drawing.Color.Yellow);
@@ -487,6 +491,7 @@ namespace PerfectChess
         private void buttonFlip_Click(object sender, EventArgs e)
         {
             BoardPanel.Flip();
+            BoardPanel.Refresh();
             string tmp = Material1.Text;
             Material1.Text = Material2.Text;
             Material2.Text = tmp;

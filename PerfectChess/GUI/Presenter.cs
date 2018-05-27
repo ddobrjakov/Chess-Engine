@@ -101,7 +101,7 @@ namespace PerfectChess
             int Piece = GamePosition[S.X + 8 * S.Y];
             if (Piece == 0) return;
             if (PlayerToMove is EnginePlayer && ((Piece & Color.Mask) == ((PlayerToMove == PlayerWhite) ? Color.White : Color.Black))) return;
-            if (PlayerToMove.IsThinking) return;
+            //if (PlayerToMove.IsThinking) return;
 
 
             List<int> Moves = GamePosition.LegalMoves();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -403,6 +404,14 @@ namespace PerfectChess
             if (Update) Restore(S);
         }
 
+        public void DeleteMarkedEffects(bool Update = true)
+        {
+            this.MarkedAttacked.Clear();
+            if (Update) Restore();
+        }
+
+
+
 
 
         /// <summary>
@@ -534,7 +543,14 @@ namespace PerfectChess
         private void Effect_MarkMovingFrom(Square S)
         {
             FillSquareWithDefaultColor(S);
-            DrawBorder(S, System.Drawing.Color.Green);
+
+            ColorMatrix cm = new ColorMatrix();
+            cm.Matrix33 = 0.60f;
+            ImageAttributes ia = new ImageAttributes();
+            ia.SetColorMatrix(cm);
+            BoardGraphics.DrawImage(SquarePieceImage(S), GetLocationRectangle(S), 0, 0, ViewSettings.SQUARESIZE, ViewSettings.SQUARESIZE, GraphicsUnit.Pixel, ia);
+
+            //DrawBorder(S, System.Drawing.Color.Green);
         }
 
         private void DrawBorder(Square Square, System.Drawing.Color C)
