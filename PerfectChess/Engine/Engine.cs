@@ -23,25 +23,28 @@ namespace PerfectChess
             //Testing
             //if (Test != null) Test.Show();
             //Test.Reset();
-            Evaluated = 0;
+            TEST_Nodes = 0;
+            TEST_Evaluated = 0;
             this.IsThinking = true;
             DateTime TimeBefore = DateTime.Now;
             int Res = BestMoveAlphaBetaApproach(P);
             DateTime TimeAfter = DateTime.Now;
             this.IsThinking = false;
-            ThinkTime = TimeAfter - TimeBefore;
+            TEST_ThinkTime = TimeAfter - TimeBefore;
 
             return Res;
         }
         public bool IsThinking { get; private set; }
 
-        public int Evaluated = 0;
-        public TimeSpan ThinkTime = new TimeSpan();
-        public int LegalMovesCallCount => Pos.LegalMovesCallCount;
+        public int TEST_Evaluated = 0;
+        public TimeSpan TEST_ThinkTime = new TimeSpan();
+        public int TEST_LegalMovesCallCount => Pos.TEST_LegalMovesCallCount;
+        public int TEST_AttacksCallCount => Pos.TEST_AttacksCallCount;
+        public int TEST_Nodes = 0;
 
         private int Evaluate()
         {
-            Evaluated++;
+            TEST_Evaluated++;
             int[] value = new int[2];
             for (int Color = White; Color <= Black; Color++)
             {
@@ -229,7 +232,7 @@ namespace PerfectChess
                 else
                 {
                     IEnumerable<int> PotentialMoves = Enumerable.Empty<int>();
-                    foreach (int Key in BestMoves.Keys.Where(key => ((key >= alpha - RandomisationMaxDifference) && key >= 0 && key <= Evaluation.CheckmateCost - 1000) || key == alpha))
+                    foreach (int Key in BestMoves.Keys.OrderBy(key => key).Where(key => ((key >= alpha - RandomisationMaxDifference) && key >= 0 && key <= Evaluation.CheckmateCost - 1000) || key == alpha))
                         PotentialMoves = PotentialMoves.Concat(BestMoves[Key]);
 
                     List<int> ListMoves = PotentialMoves.ToList();
@@ -286,6 +289,7 @@ namespace PerfectChess
 
         private int AlphaBetaMax(int Depth, int alpha, int beta)
         {
+            TEST_Nodes++;
             if (Depth == 0) return Evaluate();
             bool Moves = false;
             foreach (int Move in SortedMoves(Pos))//Pos.LegalMoves())
@@ -310,6 +314,7 @@ namespace PerfectChess
         }
         private int AlphaBetaMin(int Depth, int alpha, int beta)
         {
+            TEST_Nodes++;
             if (Depth == 0) return Evaluate();
 
             bool Moves = false;
@@ -350,7 +355,10 @@ namespace PerfectChess
         }
         private void SortMoves(int[] Moves, int[] Values, int Count)
         {
-            int maxindex = 0;
+            Array.Sort(Values, Moves, Comparer<int>.Create(new Comparison<int>((a, b) => (a <= b) ? 1 : -1)));
+
+
+            /*int maxindex = 0;
             for (int i = 0; i < Math.Min(Count, Moves.Length); i++)
             {
                 maxindex = i;
@@ -372,7 +380,7 @@ namespace PerfectChess
                     Values[i] = Values[maxindex];
                     Values[maxindex] = rtmp;
                 }
-            }
+            }*/
         }
         /*private class TopMoves
         {

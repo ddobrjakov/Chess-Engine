@@ -10,10 +10,10 @@ namespace PerfectChess
 {
     partial class Position
     {
-        public int LegalMovesCallCount = 0;
+        public int TEST_LegalMovesCallCount = 0;
         public List<int> LegalMoves()
         {
-            LegalMovesCallCount++;
+            TEST_LegalMovesCallCount++;
             bool Check = IsInCheck(ColorToMove);
 
 

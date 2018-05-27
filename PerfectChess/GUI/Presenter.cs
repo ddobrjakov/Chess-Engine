@@ -6,131 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace PerfectChess
-{
-    public class PresenterOld
-    {
-        private Form1 BoardView;
-        private Position Pos;
-
-        private TestForm Test;
-        public PresenterOld(Form1 BoardView)
-        {
-            Test = new TestForm();
-            //Test.Show();
-
-            this.Pos = new Position();
-            this.BoardView = BoardView;
-            this.SuperSmartEngine = new Engine();
-
-            this.BoardView.SquareTapped += BoardView_SquareTapped;
-            this.BoardView.AskForFinish += BoardView_AskForFinish;
-            this.BoardView.AskForUndo += BoardView_AskForUndo;
-            this.BoardView.WantNewGame += BoardView_WantNewGame;
-        }
-
-        private void BoardView_WantNewGame(object sender, int e)
-        {
-            this.Pos = new Position();
-            this.SuperSmartEngine = new Engine();
-            BoardView.SetStartPos(Pos);
-        }
-
-        private void BoardView_SquareTapped(object sender, Square S)
-        {
-            int Piece = Pos[S.X + 8 * S.Y];
-            if (Piece == 0 || (Piece & Color.Mask) != Pos.ColorToMove) { return; }// BoardView.CancelMove();
-            if (SuperSmartEngine.IsThinking) return;
-
-            List<int> Moves = Pos.LegalMoves();
-
-            List<Square> EmptyAvailibleSquares = new List<Square>();
-            List<Square> EnemyAvailibleSquares = new List<Square>();
-
-            foreach (int Move in Moves.Where(m => PerfectChess.Move.FromSquare(m) == S.X + 8 * S.Y))
-            {
-                if (PerfectChess.Move.ToPiece(Move) == 0)
-                    EmptyAvailibleSquares.Add(Square.Get(PerfectChess.Move.ToSquare(Move) % 8 + 1, PerfectChess.Move.ToSquare(Move) / 8 + 1));
-                else EnemyAvailibleSquares.Add(Square.Get(PerfectChess.Move.ToSquare(Move) % 8 + 1, PerfectChess.Move.ToSquare(Move) / 8 + 1));
-            }
-            BoardView.StartMove(S, EmptyAvailibleSquares, EnemyAvailibleSquares);
-        }
-        private void BoardView_AskForFinish(object sender, Tuple<Square, Square> e)
-        {
-            List<int> Moves = Pos.LegalMoves();
-            Square From = e.Item1;
-            Square To = e.Item2;
-
-            IEnumerable<int> MovesWhere = Moves.Where(m => PerfectChess.Move.FromSquare(m) == From.X + 8 * From.Y && PerfectChess.Move.ToSquare(m) == To.X + 8 * To.Y);
-            if (MovesWhere.Any())
-            {
-                int MoveToMake = MovesWhere.First();
-
-                Pos.Make(MoveToMake);
-                BoardView.FinishMove(MovesWhere.First());
-
-                //Test.ShowStats(Pos);
-
-                if (Pos.Check)
-                {
-                    if (Pos.Checkmate) { BoardView.Checkmate(true); return; }
-                    else BoardView.Check(true);
-                }
-
-
-                StartEngineWork();
-            }
-            else { BoardView.CancelMove(); }
-        }
-        private void BoardView_AskForUndo(object sender, EventArgs e)
-        {
-            if (SuperSmartEngine.IsThinking) return;
-            if (!Pos.LegalMoves().Any()) return;
-
-            for (int i = 0; i <= 0; i++)
-            {
-                int? MoveToUndo = Pos.LastMove;
-                if (MoveToUndo == null)
-                {
-                    //No moves handler
-                    return;
-                }
-                Pos.UnMake();
-                BoardView.UndoMove((int)MoveToUndo);
-            }
-            //Test.ShowStats(Pos);
-        }
-
-        private async void StartEngineWork()
-        {
-            BoardView.Text = "PerfectChess Engine - Thinking...";
-
-            int Move = -2;
-            await Task.Run(() => Move = SuperSmartEngine.BestMove(Pos));
-            //Move = SuperSmartEngine.BestMove(Pos);
-            if (Move < 0)
-            {
-                BoardView.Stalemate();//throw new Exception("Нет ходов");
-                BoardView.Text = "PerfectChess Engine";
-                return;
-            }
-
-            Pos.Make(Move);
-            BoardView.PerformComputerMove(Move);
-
-            if (Pos.Check)
-            {
-                if (Pos.Checkmate) { BoardView.Checkmate(false); return; }
-                else BoardView.Check(false);
-            }
-
-            BoardView.Text = "PerfectChess Engine";
-        }
-
-        private Engine SuperSmartEngine;
-    }
-
-
-
+{  
     public abstract class Player
     {
         public abstract void YourMove(Position P);
@@ -170,9 +46,11 @@ namespace PerfectChess
         public override bool IsThinking => E.IsThinking;
 
         //Testing
-        public int Evaluated => E.Evaluated;
-        public TimeSpan ThinkTime => E.ThinkTime;
-        public int LegalMovesCallCount => E.LegalMovesCallCount;
+        public int TEST_Evaluated => E.TEST_Evaluated;
+        public TimeSpan TEST_ThinkTime => E.TEST_ThinkTime;
+        public int TEST_LegalMovesCallCount => E.TEST_LegalMovesCallCount;
+        public int TEST_Nodes => E.TEST_Nodes;
+        public int TEST_AttacksCallCount => E.TEST_AttacksCallCount;
     }
 
 
@@ -306,9 +184,12 @@ namespace PerfectChess
                 if (PlayerWaiting is EnginePlayer)
                 {
                     EnginePlayer EP = (EnginePlayer)(PlayerWaiting);
-                    Test.ShowStats(EP.Evaluated.ToString() + " позиций оценено: " + EP.ThinkTime + "\n");
-                    Test.ShowStats("LegalMoves посчитаны " + EP.LegalMovesCallCount.ToString() + " раз\n\n");
-
+                    Test.ShowStats("Time: " + EP.TEST_ThinkTime + "\n");
+                    Test.ShowStats("Total nodes considered:    " + EP.TEST_Nodes + " (" + Math.Round(EP.TEST_Nodes / EP.TEST_ThinkTime.TotalSeconds) + " n/s)\n");
+                    Test.ShowStats("Total positions evaluated: " + EP.TEST_Evaluated.ToString() + " (" + Math.Round(EP.TEST_Evaluated/EP.TEST_ThinkTime.TotalSeconds) + " n/s)\n");
+                    Test.ShowStats("LegalMoves calculated " + EP.TEST_LegalMovesCallCount.ToString() + " times\n");
+                    Test.ShowStats("Attacks called " + EP.TEST_AttacksCallCount.ToString() + " times\n");
+                    Test.ShowStats("\n");
                 }
             }
 

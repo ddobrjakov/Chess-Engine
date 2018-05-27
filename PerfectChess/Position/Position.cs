@@ -180,8 +180,10 @@ namespace PerfectChess
             return false;
         }
 
+        public int TEST_AttacksCallCount = 0;
         public bool Attacks(int FromSquare, int ToSquare)
         {
+            TEST_AttacksCallCount++;
             //if (SquarePiece[FromSquare] == 0 || (SquarePiece[FromSquare] & Color.Mask) == (SquarePiece[ToSquare] & Color.Mask)) return false;
             int piece = SquarePiece[FromSquare];
             switch (piece & Piece.Mask)
