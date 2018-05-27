@@ -67,7 +67,7 @@ namespace PerfectChess
             //SetGradientBackground(TestOutput, new Point(0, 0), new Point(0, 50), System.Drawing.Color.Black, System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));
             TestOutput.BackColor = System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5);
 
-            BoardPanel = new BoardPanel();
+            BoardPanel = new BoardPanelNew();
             BoardPanel.Location = new Point(50, 50);
             this.Controls.Add(BoardPanel);
 
@@ -101,7 +101,7 @@ namespace PerfectChess
         }
 
 
-        public BoardPanel BoardPanel { get; private set; }
+        public BoardPanelNew BoardPanel { get; private set; }
         public void undoButton_Click(object sender, EventArgs e)
         {
             AskForUndo?.Invoke(this, EventArgs.Empty);
@@ -138,6 +138,13 @@ namespace PerfectChess
         {
             MoveStartAllowed = true;
 
+            _cachedText = TestOutput.Text;
+            BoardPanel.MarkAttacked(EmptyAvailibleSquares);
+            BoardPanel.MarkAttacked(EnemyAvailibleSquares);
+            Identifier = BoardPanel.StartMove(FROM);//MousePosition);
+
+            BoardPanel.Refresh();
+            /*
             //Сохранили изображение что мы будем двигать
             ImageMoving = new Bitmap(BoardPanel.GetSquareImage(FROM));
 
@@ -155,7 +162,8 @@ namespace PerfectChess
             foreach (Square P in EmptyAvailibleSquares)
             {
                 TestOutput.Text += P.ToString();
-                BoardPanel.DrawSquareCenter(P, ViewSettings.CIRCLE_FILLED);
+                //BoardPanel.DrawSquareCenter(P, ViewSettings.CIRCLE_FILLED);
+                BoardPanel.MarkAttacked(P);
             }
 
             //Демонстрация взятий
@@ -166,11 +174,15 @@ namespace PerfectChess
                 TestOutput.Text += EnemySquare.ToString();
                 Bitmap EnemyImage = new Bitmap(BoardPanel.GetSquareImage(EnemySquare));
 
-                if (EnemySquare.Color == Color.White) BoardPanel.SetSquareColor(EnemySquare, ViewSettings.WHITE_AVAILIBLE_COLOR);
-                else BoardPanel.SetSquareColor(EnemySquare, ViewSettings.BLACK_AVAILIBLE_COLOR);
+                //if (EnemySquare.Color == Color.White) BoardPanel.SetSquareColor(EnemySquare, ViewSettings.WHITE_AVAILIBLE_COLOR);
+                //else BoardPanel.SetSquareColor(EnemySquare, ViewSettings.BLACK_AVAILIBLE_COLOR);
+                BoardPanel.MarkAttacked(EnemySquare);
 
                 BoardPanel.SetSquareImage(EnemySquare, EnemyImage);
             }
+
+            //Подсветка квадратика с которого ходим
+            BoardPanel.DrawBorder(FROM, System.Drawing.Color.Green);
 
             //Сохранили бэкграунд как доску без фигуры на этом поле, но с демонстрацией ходов, чтобы затем поверх нее вставлять фигуру
             BackgroundWhileMoving = new Bitmap(BoardPanel.BackgroundImage);
@@ -179,21 +191,25 @@ namespace PerfectChess
             BoardPanel.Refresh();
 
             //Сохранили квадрат с которого начинается ход
-            MovingFromSquare = FROM;
+            MovingFromSquare = FROM;*/
         }
-
+        private int Identifier = 0;
         //Updating the image while mouse moving
         private void BoardPanel_MouseMove(object sender, MouseEventArgs e)
         {
             if (!MoveStartAllowed) return;
-            if (BackgroundWhileMoving != null && MousePressed)
+            if (MousePressed)
             {
-                R.Location = new Point(e.X - ViewSettings.SQUARESIZE / 2, e.Y - ViewSettings.SQUARESIZE / 2);
+                /*R.Location = new Point(e.X - ViewSettings.SQUARESIZE / 2, e.Y - ViewSettings.SQUARESIZE / 2);
 
                 BoardPanel.Draw(BackgroundWhileMoving);
                 BoardPanel.Draw(ImageMoving, R);
 
+                BoardPanel.Invalidate();*/
+
+                BoardPanel.ContinueMove(Identifier, new Point(e.X - ViewSettings.SQUARESIZE / 2, e.Y - ViewSettings.SQUARESIZE / 2));
                 BoardPanel.Invalidate();
+                BoardPanel.Refresh();
             }
         }
 
@@ -205,6 +221,7 @@ namespace PerfectChess
             if (!MoveStartAllowed) return;
             MousePressed = false;
 
+            
             Square MovingToSquare;
             try
             {
@@ -218,12 +235,13 @@ namespace PerfectChess
                 return;
             }
 
-            AskForFinish?.Invoke(this, new Tuple<Square, Square>(MovingFromSquare, MovingToSquare));
+
+            AskForFinish?.Invoke(this, new Tuple<Square, Square>(BoardPanel.FromSquare(Identifier), MovingToSquare));
             MoveStartAllowed = false;
         }      
         public void FinishMove(int Move)
         {
-            BoardPanel.BackgroundImage = PreSavedBackground;
+            //BoardPanel.BackgroundImage = PreSavedBackground;
 
             //(PerfectChess.Move.FromPiece(Move) & Color.Mask)
             TestOutput.ForeColor = SystemColors.WindowText;
@@ -233,14 +251,23 @@ namespace PerfectChess
             TestOutput.ScrollToCaret();
             TestOutput.Refresh();
 
+            BoardPanel.DeleteMove(Identifier, false);
             PerformMove(Move);
+            BoardPanel.DeleteEffects();
+            BoardPanel.ShowLastMove(Square.Get(PerfectChess.Move.FromSquare(Move)), Square.Get(PerfectChess.Move.ToSquare(Move)));
+            BoardPanel.Refresh();
+
             MoveStartAllowed = false;
         }
         public void CancelMove()
         {
             //Рисуем состояние доски до начала хода
-            BoardPanel.BackgroundImage = PreSavedBackground;
-            BoardPanel.Invalidate();
+            //BoardPanel.BackgroundImage = PreSavedBackground;
+            //BoardPanel.Invalidate();
+            BoardPanel.DeleteMove(Identifier);
+            BoardPanel.DeleteEffects();
+
+            BoardPanel.Refresh();
 
             TestOutput.Text = _cachedText;
 
@@ -274,21 +301,24 @@ namespace PerfectChess
 
             else if (Promotion(MoveToUndo))
             {
-                BoardPanel.ResetSquare(TO);
-                if (ToPiece(MoveToUndo) != 0) BoardPanel.SetSquareImage(TO, ViewModelConnector.PieceImage[FromPiece(MoveToUndo)]);
+                //BoardPanel.ResetSquare(TO);
+                //if (ToPiece(MoveToUndo) != 0) BoardPanel.SetSquareImage(TO, ViewModelConnector.PieceImage[FromPiece(MoveToUndo)]);
+                BoardPanel.SetPiece(TO, FromPiece(MoveToUndo));
             }
 
             else if (EnPassant(MoveToUndo))
             {
                 Square CapturedPawnSquare = Square.Get(ToSquare(MoveToUndo) - 8 + 16 * (FromPiece(MoveToUndo) & Color.Mask));
-                BoardPanel.SetSquareImage(CapturedPawnSquare, ViewModelConnector.PieceImage[Piece.Pawn | ((1 - FromPiece(MoveToUndo)) & Color.Mask)]);
+                //BoardPanel.SetSquareImage(CapturedPawnSquare, ViewModelConnector.PieceImage[Piece.Pawn | ((1 - FromPiece(MoveToUndo)) & Color.Mask)]);
+                BoardPanel.SetPiece(CapturedPawnSquare, Piece.Pawn | ((1 - FromPiece(MoveToUndo)) & Color.Mask));
             }
 
             //Undoing the main part of the move
             PerformPrimitiveMove(TO, FROM);
             if (ToPiece(MoveToUndo) != 0)
             {
-                BoardPanel.SetSquareImage(TO, ViewModelConnector.PieceImage[ToPiece(MoveToUndo)]);
+                //BoardPanel.SetSquareImage(TO, ViewModelConnector.PieceImage[ToPiece(MoveToUndo)]);
+                BoardPanel.SetPiece(TO, ToPiece(MoveToUndo));
             }
 
             BoardPanel.Invalidate(true);
@@ -305,7 +335,13 @@ namespace PerfectChess
             TestOutput.SelectionStart = TestOutput.TextLength;
             TestOutput.ScrollToCaret();
 
+            //BoardPanel.Restore();
             PerformMove(Move);
+            BoardPanel.DeleteEffects();
+            BoardPanel.ShowLastMove(Square.Get(PerfectChess.Move.FromSquare(Move)), Square.Get(PerfectChess.Move.ToSquare(Move)));
+            //BoardPanel.DrawBorder(Square.Get(PerfectChess.Move.FromSquare(Move)), System.Drawing.Color.Green);
+            //BoardPanel.DrawBorder(Square.Get(PerfectChess.Move.ToSquare(Move)), System.Drawing.Color.Yellow);
+            BoardPanel.Refresh();
         }
 
         /// <summary>
@@ -331,14 +367,16 @@ namespace PerfectChess
             //Places the promotion piece instead of promoted pawn
             else if (PerfectChess.Move.Promotion(Move))
             {
-                BoardPanel.ResetSquare(TO);
-                BoardPanel.SetSquareImage(TO, ViewModelConnector.PieceImage[PerfectChess.Move.PromotionPiece(Move)]);
+                //BoardPanel.ResetSquare(TO);
+                BoardPanel.SetPiece(TO, PerfectChess.Move.PromotionPiece(Move));
+                //BoardPanel.SetSquareImage(TO, ViewModelConnector.PieceImage[PerfectChess.Move.PromotionPiece(Move)]);
             }
 
             //Deletes the pawn if it's en passant
             else if (PerfectChess.Move.EnPassant(Move))
             {
-                BoardPanel.ResetSquare(Square.Get(PerfectChess.Move.ToSquare(Move) - 8 + 16 * (PerfectChess.Move.FromPiece(Move) & Color.Mask)));
+                //BoardPanel.ResetSquare(Square.Get(PerfectChess.Move.ToSquare(Move) - 8 + 16 * (PerfectChess.Move.FromPiece(Move) & Color.Mask)));
+                BoardPanel.DeletePiece(Square.Get(PerfectChess.Move.ToSquare(Move) - 8 + 16 * (PerfectChess.Move.FromPiece(Move) & Color.Mask)));
             }
 
             BoardPanel.Invalidate(true);
@@ -349,9 +387,10 @@ namespace PerfectChess
         /// </summary>
         private void PerformPrimitiveMove(Square From, Square To)
         {
-            BoardPanel.ResetSquare(To);
-            BoardPanel.SetSquareImage(To, BoardPanel.GetSquareImage(From));
-            BoardPanel.ResetSquare(From);
+            //BoardPanel.ResetSquare(To);
+            //BoardPanel.SetSquareImage(To, BoardPanel.GetSquareImage(From));
+            //BoardPanel.ResetSquare(From);
+            BoardPanel.PerformMove(From, To);
         }
 
         public void Checkmate(bool MovedIsHuman, bool LostIsHuman, int ColorWin)
@@ -428,12 +467,13 @@ namespace PerfectChess
         }
         public void SetStartPos(Position P)
         {
-            for (int i = 0; i < 64; i++)
-            {
-                Square S = Square.Get(i);
-                BoardPanel.ResetSquare(S);
-                if (P[i] != 0) BoardPanel.SetSquareImage(S, ViewModelConnector.PieceImage[P[i]]);
-            }
+            //for (int i = 0; i < 64; i++)
+            //{
+            //    Square S = Square.Get(i);
+                //BoardPanel.ResetSquare(S);
+                //if (P[i] != 0) BoardPanel.SetSquareImage(S, ViewModelConnector.PieceImage[P[i]]);
+            //}
+            BoardPanel.SetPosition(P.SquarePiece);
             BoardPanel.Refresh();
             TestOutput.Text = "";          
 

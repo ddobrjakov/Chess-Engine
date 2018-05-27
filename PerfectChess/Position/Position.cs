@@ -49,7 +49,7 @@ namespace PerfectChess
         /// <summary>
         /// Returns piece located on given square
         /// </summary>
-        private int[] SquarePiece = new int[64];
+        public readonly int[] SquarePiece = new int[64];
 
         /// <summary>
         /// Public property to get a piece located on certain square

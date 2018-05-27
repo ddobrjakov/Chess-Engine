@@ -20,7 +20,6 @@ namespace PerfectChess
             Form1 F = new Form1();
             //Presenter P = new Presenter(F); 
             Presenter P = new Presenter(F, new HumanPlayer(), new EnginePlayer(), new Position());
-            Console.WriteLine("idk");
             Application.Run(F);
         }
     }
