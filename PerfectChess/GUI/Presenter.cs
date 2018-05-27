@@ -168,6 +168,11 @@ namespace PerfectChess
             }
         }
         public override bool IsThinking => E.IsThinking;
+
+        //Testing
+        public int Evaluated => E.Evaluated;
+        public TimeSpan ThinkTime => E.ThinkTime;
+        public int LegalMovesCallCount => E.LegalMovesCallCount;
     }
 
 
@@ -191,6 +196,8 @@ namespace PerfectChess
 
             this.PlayerWhite.MakesMove += Player_MakesMove;
             this.PlayerBlack.MakesMove += Player_MakesMove;
+
+            if (Global.USE_TEST) Test.Show();
         }
 
         private void BoardView_WantNewGame(object sender, int Players)
@@ -217,7 +224,7 @@ namespace PerfectChess
             if (Piece == 0) return;
             if (PlayerToMove is EnginePlayer && ((Piece & Color.Mask) == ((PlayerToMove == PlayerWhite) ? Color.White : Color.Black))) return;
             if (PlayerToMove.IsThinking) return;
-            
+
 
             List<int> Moves = GamePosition.LegalMoves();
 
@@ -294,6 +301,16 @@ namespace PerfectChess
             //Stalemate
             else if (GamePosition.Stalemate) BoardView.Stalemate();
 
+            if (Global.USE_TEST)
+            {
+                if (PlayerWaiting is EnginePlayer)
+                {
+                    EnginePlayer EP = (EnginePlayer)(PlayerWaiting);
+                    Test.ShowStats(EP.Evaluated.ToString() + " позиций оценено: " + EP.ThinkTime + "\n");
+                    Test.ShowStats("LegalMoves посчитаны " + EP.LegalMovesCallCount.ToString() + " раз\n\n");
+
+                }
+            }
 
             int WhiteMaterialAdvantage = CountMaterial();
             BoardView.SetMaterial(WhiteMaterialAdvantage, -WhiteMaterialAdvantage);
@@ -342,5 +359,7 @@ namespace PerfectChess
 
         private Player PlayerToMove => (this.GamePosition.ColorToMove == Color.White) ? this.PlayerWhite : this.PlayerBlack;
         private Player PlayerWaiting => (this.GamePosition.ColorToMove == Color.Black) ? this.PlayerWhite : this.PlayerBlack;
+
+        private TestForm Test = new TestForm();
     }
 }

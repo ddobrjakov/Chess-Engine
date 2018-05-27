@@ -10,8 +10,10 @@ namespace PerfectChess
 {
     partial class Position
     {
+        public int LegalMovesCallCount = 0;
         public List<int> LegalMoves()
         {
+            LegalMovesCallCount++;
             bool Check = IsInCheck(ColorToMove);
 
 
@@ -40,7 +42,7 @@ namespace PerfectChess
             UInt64 PinnedPieces = (Check) ? 0 : GetPinnedPieces();
             //Silent Moves
             GeneratePawnMoves(moves, PinnedPieces, Check);
-            GenerateKnightMoves(moves);
+            GenerateKnightMoves(moves, PinnedPieces, Check);
             GenerateBishopMoves(moves, PinnedPieces, Check);
             GenerateRookMoves(moves, PinnedPieces, Check);
             GenerateQueenMoves(moves, PinnedPieces, Check);
@@ -234,6 +236,7 @@ namespace PerfectChess
                 UInt64 attackBitboard = Attack.Pawn(ColorToMove, FromSquare);
                 moveBitboard |= enemyALLpieces & attackBitboard;
 
+
                 //Now all the pseudo-legal moves are stored in moveBitboard and we're ready to check and add them
                 while (moveBitboard != 0)
                 {
@@ -307,7 +310,7 @@ namespace PerfectChess
                 }
             }
         }*/
-        private void GenerateKnightMoves(List<int> moves)
+        private void GenerateKnightMoves(List<int> moves, UInt64 PinnedPieces, bool Check)
         {
             int ourColor = ColorToMove;
             UInt64 ourPieces = PieceBitboard[ourColor | Knight];
@@ -318,14 +321,18 @@ namespace PerfectChess
                 //Getting the moving piece square
                 int FromSquare = BitOperations.PopLS(ref ourPieces);
 
+                //Checking for pin
+                bool Pinned = ((PinnedPieces & (1UL << FromSquare)) != 0) ? true : false;
+
                 UInt64 moveBitboard = targetBitboard & Attack.Knight(FromSquare);
                 while (moveBitboard != 0)
                 {
-                    // Perform minimal state changes to mimick real move and check for legality. 
+                    // Perform minimal state changes to simulate real move and check for legality
                     Int32 ToSquare = BitOperations.PopLS(ref moveBitboard);
                     int CapturedPiece = SquarePiece[ToSquare];
 
-                    if (IsLegal(FromSquare, ToSquare))
+                    bool Legal = (Check) ? IsLegal(FromSquare, ToSquare) : (!Pinned || Bitboard.Aligned(KingSquare(ColorToMove), FromSquare, ToSquare));
+                    if (Legal)//if (IsLegal(FromSquare, ToSquare))
                     {
                         moves.Add(Move.Create(FromSquare, ToSquare, ColorToMove | Knight, CapturedPiece));
                     }

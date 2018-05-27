@@ -23,16 +23,25 @@ namespace PerfectChess
             //Testing
             //if (Test != null) Test.Show();
             //Test.Reset();
-
+            Evaluated = 0;
             this.IsThinking = true;
+            DateTime TimeBefore = DateTime.Now;
             int Res = BestMoveAlphaBetaApproach(P);
+            DateTime TimeAfter = DateTime.Now;
             this.IsThinking = false;
+            ThinkTime = TimeAfter - TimeBefore;
+
             return Res;
         }
         public bool IsThinking { get; private set; }
 
+        public int Evaluated = 0;
+        public TimeSpan ThinkTime = new TimeSpan();
+        public int LegalMovesCallCount => Pos.LegalMovesCallCount;
+
         private int Evaluate()
         {
+            Evaluated++;
             int[] value = new int[2];
             for (int Color = White; Color <= Black; Color++)
             {
@@ -200,7 +209,7 @@ namespace PerfectChess
 
             if (Pos.ColorToMove == White)
             {
-                foreach (int Move in SortMoves(Pos))
+                foreach (int Move in SortedMoves(Pos))
                 {
                     Pos.Make(Move);
                     int score = AlphaBetaMin(Depth - 1, alpha - 1 - RandomisationMaxDifference, beta);
@@ -230,7 +239,7 @@ namespace PerfectChess
             }
             else
             {
-                foreach (int Move in SortMoves(Pos))
+                foreach (int Move in SortedMoves(Pos))
                 {
                     Pos.Make(Move);
                     //+1 so that positions that are just as good as the current beta are counted to random generator
@@ -279,7 +288,7 @@ namespace PerfectChess
         {
             if (Depth == 0) return Evaluate();
             bool Moves = false;
-            foreach (int Move in SortMoves(Pos))//Pos.LegalMoves())
+            foreach (int Move in SortedMoves(Pos))//Pos.LegalMoves())
             {
                 Moves = true;
                 Pos.Make(Move);
@@ -304,7 +313,7 @@ namespace PerfectChess
             if (Depth == 0) return Evaluate();
 
             bool Moves = false;
-            foreach (int Move in SortMoves(Pos))
+            foreach (int Move in SortedMoves(Pos))
             {
                 Moves = true;
                 Pos.Make(Move);
@@ -326,26 +335,57 @@ namespace PerfectChess
             return beta;
         }
 
-        private IEnumerable<int> SortMoves(Position P)
+        private IEnumerable<int> SortedMoves(Position P)
         {
-            //List<int> SortedMoves = P.LegalMoves();
+            
+
             int[] Moves = P.LegalMoves().ToArray();
+            if (!Moves.Any()) return Moves;
             int[] MovesRating = new int[Moves.Length];
             for (int i = 0; i < Moves.Length; i++)
-            {
                 MovesRating[i] = MoveRating(Moves[i], P);
-            }
-            Array.Sort(MovesRating, Moves);
-            //List<int> MovesRating = new List<int>
-            //foreach (int Move in SortedMoves)
-            //{
-            //
-            //    SortedMoves.Sort()
-            //    SortedMoves.Insert()
-            //}
-            //return SortedMoves;
-            return Moves.Reverse();
+
+            SortMoves(Moves, MovesRating, TopMovesCount);
+            return Moves;
         }
+        private void SortMoves(int[] Moves, int[] Values, int Count)
+        {
+            int maxindex = 0;
+            for (int i = 0; i < Math.Min(Count, Moves.Length); i++)
+            {
+                maxindex = i;
+
+                for (int j = i + 1; j < Moves.Length; j++)
+                {
+                    if (Values[j] > Values[maxindex])
+                    {
+                        maxindex = j;
+                    }
+                }
+                if (maxindex != i)
+                {
+                    int tmp = Moves[i];
+                    Moves[i] = Moves[maxindex];
+                    Moves[maxindex] = tmp;
+
+                    int rtmp = Values[i];
+                    Values[i] = Values[maxindex];
+                    Values[maxindex] = rtmp;
+                }
+            }
+        }
+        /*private class TopMoves
+        {
+            private (int move, int rating)[] Moves = new (int move, int rating)[3];
+            private (int move, int rating) WorstMove => Moves[Moves.Length - 1];
+            public void AddIfBetter(int Move, int Rating)
+            {
+                if (Rating > WorstMove.Rating)
+            }
+        }*/
+        private const int TopMovesCount = 6;
+
+
         private IEnumerable<int> FirstPlySortMoves(Position P)
         {
             int[] Moves = P.LegalMoves().ToArray();
