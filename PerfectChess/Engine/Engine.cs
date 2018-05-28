@@ -165,6 +165,7 @@ namespace PerfectChess
         }
         private int MiniMax(int depth, int Player)
         {
+            TEST_Nodes++;
             if (depth <= 0) return Evaluate();
             //int alpha = int.MinValue;
             int alpha = (Pos.ColorToMove == White) ? int.MinValue : int.MaxValue;
@@ -342,8 +343,6 @@ namespace PerfectChess
 
         private IEnumerable<int> SortedMoves(Position P)
         {
-            
-
             int[] Moves = P.LegalMoves().ToArray();
             if (!Moves.Any()) return Moves;
             int[] MovesRating = new int[Moves.Length];

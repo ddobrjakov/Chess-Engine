@@ -356,7 +356,7 @@ namespace PerfectChess
                 UInt64 moveBitboard = targetBitboard & Attack.Bishop(FromSquare, OccupiedBB);
                 while (moveBitboard != 0)
                 {
-                    // Perform minimal state changes to mimick real move and check for legality. 
+                    // Perform minimal state changes to simulate real move and check for legality
                     Int32 ToSquare = BitOperations.PopLS(ref moveBitboard);
                     int CapturedPiece = SquarePiece[ToSquare];
 
@@ -385,7 +385,7 @@ namespace PerfectChess
                 UInt64 moveBitboard = targetBitboard & Attack.Rook(FromSquare, OccupiedBB);
                 while (moveBitboard != 0)
                 {
-                    // Perform minimal state changes to mimick real move and check for legality. 
+                    // Perform minimal state changes to simulate real move and check for legality
                     Int32 ToSquare = BitOperations.PopLS(ref moveBitboard);
                     int CapturedPiece = SquarePiece[ToSquare];
 
@@ -414,7 +414,7 @@ namespace PerfectChess
                 UInt64 moveBitboard = targetBitboard & Attack.Queen(FromSquare, OccupiedBB);
                 while (moveBitboard != 0)
                 {
-                    // Perform minimal state changes to mimick real move and check for legality. 
+                    // Perform minimal state changes to simulate real move and check for legality
                     Int32 ToSquare = BitOperations.PopLS(ref moveBitboard);
                     int CapturedPiece = SquarePiece[ToSquare];
 
@@ -440,7 +440,7 @@ namespace PerfectChess
                 UInt64 moveBitboard = targetBitboard & Attack.King(SquareFrom);
                 while (moveBitboard != 0)
                 {
-                    // Perform minimal state changes to mimick real move and check for legality. 
+                    // Perform minimal state changes to simulate real move and check for legality
                     Int32 SquareTo = BitOperations.PopLS(ref moveBitboard);
                     int CapturedPiece = SquarePiece[SquareTo];
 

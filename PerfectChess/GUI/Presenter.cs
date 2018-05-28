@@ -188,7 +188,7 @@ namespace PerfectChess
                     Test.ShowStats("Total nodes considered:    " + EP.TEST_Nodes + " (" + Math.Round(EP.TEST_Nodes / EP.TEST_ThinkTime.TotalSeconds) + " n/s)\n");
                     Test.ShowStats("Total positions evaluated: " + EP.TEST_Evaluated.ToString() + " (" + Math.Round(EP.TEST_Evaluated/EP.TEST_ThinkTime.TotalSeconds) + " n/s)\n");
                     Test.ShowStats("LegalMoves calculated " + EP.TEST_LegalMovesCallCount.ToString() + " times\n");
-                    Test.ShowStats("Attacks called " + EP.TEST_AttacksCallCount.ToString() + " times\n");
+                    //Test.ShowStats("Attacks called " + EP.TEST_AttacksCallCount.ToString() + " times\n");
                     Test.ShowStats("\n");
                 }
             }

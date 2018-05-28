@@ -19,55 +19,22 @@ namespace PerfectChess
         public Form1()
         {
             InitializeComponent();
-            //this.BackColor = ViewSettings.BACKGROUND_COLOR;
-            //Bitmap background = new Bitmap(this.Width, this.Height);
-            //Graphics G = Graphics.FromImage(background);
-            //LinearGradientBrush brush = new LinearGradientBrush(new Point(0, 0), new Point(background.Width, 0), System.Drawing.Color.FromArgb(0x2c2c2c), System.Drawing.Color.FromArgb(0x1a1a1a));
-            //G.FillRectangle(brush, 0, 0, background.Width, background.Height);
-
-            //Bitmap back = new Bitmap(this.Width, this.Height);
-            //Graphics G = Graphics.FromImage(back);
-            //LinearGradientBrush backbrush = new LinearGradientBrush(new Point(0, 0), new Point(0, back.Height), System.Drawing.Color.FromArgb(0x2c, 0x2c, 0x2c), System.Drawing.Color.FromArgb(0x1a, 0x1a, 0x1a));
-            //G.FillRectangle(backbrush, 0, 0, back.Width, back.Height);
-            //this.BackgroundImage = back;
 
             //this.BackColor = System.Drawing.Color.Yellow;
-            SetGradientBackground(this, new Point(0, 0), new Point(0, this.Height), System.Drawing.Color.FromArgb(0x2c, 0x2c, 0x2c), System.Drawing.Color.FromArgb(0x1a, 0x1a, 0x1a));
             //this.BackgroundImage = Image.FromFile("../../../images/Хрень.jpg");
-            //this.BackgroundImageLayout = ImageLayout.Stretch;
-            
             //SetGradientBackground(this, new Point(0, 0), new Point(100, 100), System.Drawing.Color.Yellow, System.Drawing.Color.Green);
 
-
-            //buttonUndo.BackgroundImage = back;
-            //newGameButton.ForeColor = System.Drawing.Color.Black;
-            SetGradientBackground(buttonUndo, new Point(0, 0), new Point(0, buttonUndo.Height), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));//System.Drawing.Color.FromArgb(0x81, 0xa8, 0xcb), System.Drawing.Color.FromArgb(0x44, 0x77, 0xa1)); //#81a8cb
-            SetGradientBackground(newGameButton, new Point(0, 0), new Point(0, newGameButton.Height), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));//System.Drawing.Color.FromArgb(0xbb, 0xaa, 0xaa), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f)); //#3D4850 3%, #313d45 4%, #232B30 100%
-            SetGradientBackground(buttonFlip, new Point(0, 0), new Point(buttonFlip.Width, buttonFlip.Height), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));//System.Drawing.Color.Gray, System.Drawing.Color.White);
-            //newGameButton.FlatAppearance.BorderColor = System.Drawing.Color.Black;// BorderSize = 0;
-            //newGameButton.FlatStyle = FlatStyle.Popup;
-            newGameButton.FlatStyle = FlatStyle.Flat;
-            newGameButton.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            newGameButton.FlatAppearance.BorderSize = 1;
-
-            buttonUndo.FlatStyle = FlatStyle.Flat;
-            buttonUndo.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            buttonUndo.FlatAppearance.BorderSize = 1;
-
-            buttonFlip.FlatStyle = FlatStyle.Flat;
-            buttonFlip.FlatAppearance.BorderColor = System.Drawing.Color.Black;
-            buttonFlip.FlatAppearance.BorderSize = 1;
-
-
+            SetGradientBackground(this, new Point(0, 0), new Point(0, this.Height), System.Drawing.Color.FromArgb(0x2c, 0x2c, 0x2c), System.Drawing.Color.FromArgb(0x1a, 0x1a, 0x1a));
+            Init_Buttons_Style();
+            Init_Material_Style();
 
             //Form Test = new TestForm();
             //Test.Show();
-            Material1.BackColor = System.Drawing.Color.FromArgb(0, System.Drawing.Color.White);
-            Material2.BackColor = System.Drawing.Color.FromArgb(0, System.Drawing.Color.White);
             //SetGradientBackground(TestOutput, new Point(0, 0), new Point(0, 50), System.Drawing.Color.Black, System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));
+
             TestOutput.BackColor = System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5);
 
-            BoardPanel = new BoardPanelNew();
+            BoardPanel = new BoardPanel();
             BoardPanel.Location = new Point(50, 50);
             this.Controls.Add(BoardPanel);
 
@@ -80,17 +47,35 @@ namespace PerfectChess
 
             SetStartPos(new Position());
         }
-
-        private void BoardPanel_MouseLeave(object sender, EventArgs e)
+        private void Init_Buttons_Style()
         {
-            this.Cursor = Cursors.Default;   
-        }
+            //buttonUndo.BackgroundImage = back;
+            //newGameButton.ForeColor = System.Drawing.Color.Black;
 
-        private void BoardPanel_MouseEnter(object sender, EventArgs e)
+            SetGradientBackground(buttonUndo, new Point(0, 0), new Point(0, buttonUndo.Height), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));//System.Drawing.Color.FromArgb(0x81, 0xa8, 0xcb), System.Drawing.Color.FromArgb(0x44, 0x77, 0xa1)); //#81a8cb
+            SetGradientBackground(newGameButton, new Point(0, 0), new Point(0, newGameButton.Height), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));//System.Drawing.Color.FromArgb(0xbb, 0xaa, 0xaa), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f)); //#3D4850 3%, #313d45 4%, #232B30 100%
+            SetGradientBackground(buttonFlip, new Point(0, 0), new Point(buttonFlip.Width, buttonFlip.Height), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));//System.Drawing.Color.Gray, System.Drawing.Color.White);
+
+            //newGameButton.FlatAppearance.BorderColor = System.Drawing.Color.Black;// BorderSize = 0;
+            //newGameButton.FlatStyle = FlatStyle.Popup;
+
+            newGameButton.FlatStyle = FlatStyle.Flat;
+            newGameButton.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            newGameButton.FlatAppearance.BorderSize = 1;
+
+            buttonUndo.FlatStyle = FlatStyle.Flat;
+            buttonUndo.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            buttonUndo.FlatAppearance.BorderSize = 1;
+
+            buttonFlip.FlatStyle = FlatStyle.Flat;
+            buttonFlip.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            buttonFlip.FlatAppearance.BorderSize = 1;
+        }
+        private void Init_Material_Style()
         {
-            this.Cursor = Cursors.Hand;
+            Material1.BackColor = System.Drawing.Color.FromArgb(0, System.Drawing.Color.White);
+            Material2.BackColor = System.Drawing.Color.FromArgb(0, System.Drawing.Color.White);
         }
-
         private void SetGradientBackground(Control C, Point From, Point To, System.Drawing.Color FromC, System.Drawing.Color ToC)
         {
             Bitmap back = new Bitmap(C.Width, C.Height);
@@ -98,10 +83,13 @@ namespace PerfectChess
             LinearGradientBrush backbrush = new LinearGradientBrush(From, To, FromC, ToC);
             G.FillRectangle(backbrush, 0, 0, back.Width, back.Height);
             C.BackgroundImage = back;
+            C.BackgroundImageLayout = ImageLayout.Stretch;
         }
 
 
-        public BoardPanelNew BoardPanel { get; private set; }
+
+
+        public BoardPanel BoardPanel { get; private set; }
         public void undoButton_Click(object sender, EventArgs e)
         {
             AskForUndo?.Invoke(this, EventArgs.Empty);
@@ -110,10 +98,6 @@ namespace PerfectChess
         private Rectangle R = new Rectangle(0, 0, ViewSettings.SQUARESIZE, ViewSettings.SQUARESIZE);
         private bool MoveStartAllowed = false;
         private bool MousePressed = false;
-        private Bitmap ImageMoving;
-        private Bitmap PreSavedBackground;
-        private Bitmap BackgroundWhileMoving;
-        private Square MovingFromSquare;
 
         private string _cachedText = String.Empty;
 
@@ -147,54 +131,6 @@ namespace PerfectChess
             BoardPanel.ContinueMove(Identifier, new Point(e.X - ViewSettings.SQUARESIZE / 2, e.Y - ViewSettings.SQUARESIZE / 2));
 
             BoardPanel.Refresh();
-            /*
-            //Сохранили изображение что мы будем двигать
-            ImageMoving = new Bitmap(BoardPanel.GetSquareImage(FROM));
-
-            //Сохранили изображение, чтобы потом в конце хода его вернуть
-            PreSavedBackground = new Bitmap(BoardPanel.BackgroundImage);
-
-            Bitmap FROM_IMAGE = new Bitmap(BoardPanel.GetSquareImage(FROM));
-            BoardPanel.ResetSquare(FROM);
-
-
-            _cachedText = TestOutput.Text;
-            TestOutput.ForeColor = SystemColors.WindowText;
-            //Демонстрация тихих ходов
-            TestOutput.Text = "Silent moves: ";
-            foreach (Square P in EmptyAvailibleSquares)
-            {
-                TestOutput.Text += P.ToString();
-                //BoardPanel.DrawSquareCenter(P, ViewSettings.CIRCLE_FILLED);
-                BoardPanel.MarkAttacked(P);
-            }
-
-            //Демонстрация взятий
-            if (TestOutput.Text != String.Empty) TestOutput.Text += "\n";
-            TestOutput.Text += "Captures: ";
-            foreach (Square EnemySquare in EnemyAvailibleSquares)
-            {
-                TestOutput.Text += EnemySquare.ToString();
-                Bitmap EnemyImage = new Bitmap(BoardPanel.GetSquareImage(EnemySquare));
-
-                //if (EnemySquare.Color == Color.White) BoardPanel.SetSquareColor(EnemySquare, ViewSettings.WHITE_AVAILIBLE_COLOR);
-                //else BoardPanel.SetSquareColor(EnemySquare, ViewSettings.BLACK_AVAILIBLE_COLOR);
-                BoardPanel.MarkAttacked(EnemySquare);
-
-                BoardPanel.SetSquareImage(EnemySquare, EnemyImage);
-            }
-
-            //Подсветка квадратика с которого ходим
-            BoardPanel.DrawBorder(FROM, System.Drawing.Color.Green);
-
-            //Сохранили бэкграунд как доску без фигуры на этом поле, но с демонстрацией ходов, чтобы затем поверх нее вставлять фигуру
-            BackgroundWhileMoving = new Bitmap(BoardPanel.BackgroundImage);
-
-            BoardPanel.SetSquareImage(FROM, FROM_IMAGE);
-            BoardPanel.Refresh();
-
-            //Сохранили квадрат с которого начинается ход
-            MovingFromSquare = FROM;*/
         }
         private int Identifier = 0;
         //Updating the image while mouse moving
@@ -290,16 +226,17 @@ namespace PerfectChess
         public event EventHandler AskForUndo;
         public void UndoMove(int MoveToUndo)
         {
-            Square TO = Square.Get(ToSquare(MoveToUndo));
-            Square FROM = Square.Get(FromSquare(MoveToUndo));
             BoardPanel.DeleteEffects();
+
+            Square TO = Square.Get(ToSquare(MoveToUndo));
+            Square FROM = Square.Get(FromSquare(MoveToUndo));      
             if (Castling(MoveToUndo))
             {
                 Square ROOK_TO = Square.Get((FromSquare(MoveToUndo) + ToSquare(MoveToUndo)) / 2);
                 Square ROOK_FROM = Square.Get((ToSquare(MoveToUndo) > FromSquare(MoveToUndo)) 
                     ? FromSquare(MoveToUndo) + 3 : FromSquare(MoveToUndo) - 4);
 
-                PerformPrimitiveMove(ROOK_TO, ROOK_FROM);
+                BoardPanel.PerformMove(ROOK_TO, ROOK_FROM);
             }
 
             else if (Promotion(MoveToUndo))
@@ -317,7 +254,7 @@ namespace PerfectChess
             }
 
             //Undoing the main part of the move
-            PerformPrimitiveMove(TO, FROM);
+            BoardPanel.PerformMove(TO, FROM);
             BoardPanel.ShowLastMove(FROM, TO);
             if (ToPiece(MoveToUndo) != 0)
             {
@@ -343,8 +280,7 @@ namespace PerfectChess
             PerformMove(Move);
             BoardPanel.DeleteEffects(false);
             BoardPanel.ShowLastMove(Square.Get(PerfectChess.Move.FromSquare(Move)), Square.Get(PerfectChess.Move.ToSquare(Move)));
-            //BoardPanel.DrawBorder(Square.Get(PerfectChess.Move.FromSquare(Move)), System.Drawing.Color.Green);
-            //BoardPanel.DrawBorder(Square.Get(PerfectChess.Move.ToSquare(Move)), System.Drawing.Color.Yellow);
+
             BoardPanel.Refresh();
         }
 
@@ -358,44 +294,28 @@ namespace PerfectChess
             Square FROM = Square.Get(PerfectChess.Move.FromSquare(Move));
 
             //Does the main part of the move
-            PerformPrimitiveMove(FROM, TO);
+            BoardPanel.PerformMove(FROM, TO);
 
             //Move the rook if it's castling
             if (PerfectChess.Move.Castling(Move))
             {
                 Square ROOK_TO = Square.Get((PerfectChess.Move.FromSquare(Move) + PerfectChess.Move.ToSquare(Move)) / 2);
                 Square ROOK_FROM = Square.Get((PerfectChess.Move.ToSquare(Move) > PerfectChess.Move.FromSquare(Move)) ? PerfectChess.Move.FromSquare(Move) + 3 : PerfectChess.Move.FromSquare(Move) - 4);
-                PerformPrimitiveMove(ROOK_FROM, ROOK_TO);
+                BoardPanel.PerformMove(ROOK_FROM, ROOK_TO);
             }
 
             //Places the promotion piece instead of promoted pawn
             else if (PerfectChess.Move.Promotion(Move))
-            {
-                //BoardPanel.ResetSquare(TO);
                 BoardPanel.SetPiece(TO, PerfectChess.Move.PromotionPiece(Move));
-                //BoardPanel.SetSquareImage(TO, ViewModelConnector.PieceImage[PerfectChess.Move.PromotionPiece(Move)]);
-            }
 
             //Deletes the pawn if it's en passant
             else if (PerfectChess.Move.EnPassant(Move))
-            {
-                //BoardPanel.ResetSquare(Square.Get(PerfectChess.Move.ToSquare(Move) - 8 + 16 * (PerfectChess.Move.FromPiece(Move) & Color.Mask)));
                 BoardPanel.DeletePiece(Square.Get(PerfectChess.Move.ToSquare(Move) - 8 + 16 * (PerfectChess.Move.FromPiece(Move) & Color.Mask)));
-            }
 
             BoardPanel.Invalidate(true);
             BoardPanel.Refresh();
         }
-        /// <summary>
-        /// Does updating square images to perform an elementary move (which consists of simple moving one piece [and capturing])
-        /// </summary>
-        private void PerformPrimitiveMove(Square From, Square To)
-        {
-            //BoardPanel.ResetSquare(To);
-            //BoardPanel.SetSquareImage(To, BoardPanel.GetSquareImage(From));
-            //BoardPanel.ResetSquare(From);
-            BoardPanel.PerformMove(From, To);
-        }
+
 
         public void Checkmate(bool MovedIsHuman, bool LostIsHuman, int ColorWin)
         {
@@ -471,19 +391,13 @@ namespace PerfectChess
         }
         public void SetStartPos(Position P)
         {
-            //for (int i = 0; i < 64; i++)
-            //{
-            //    Square S = Square.Get(i);
-                //BoardPanel.ResetSquare(S);
-                //if (P[i] != 0) BoardPanel.SetSquareImage(S, ViewModelConnector.PieceImage[P[i]]);
-            //}
+            BoardPanel.Reset();
             BoardPanel.SetPosition(P.SquarePiece);
             BoardPanel.Refresh();
             TestOutput.Text = "";          
 
             MoveStartAllowed = false;
             MousePressed = false;
-            ImageMoving = null;
 
             SetMaterial(0, 0);
         }
@@ -552,6 +466,15 @@ namespace PerfectChess
         {
             SetGradientBackground(buttonFlip, new Point(0, 0), new Point(buttonFlip.Width, buttonFlip.Height), System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5), System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));
             buttonFlip.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.Cursor = Cursors.Default;
+        }
+
+        private void BoardPanel_MouseEnter(object sender, EventArgs e)
+        {
+            this.Cursor = Cursors.Hand;
+        }
+        private void BoardPanel_MouseLeave(object sender, EventArgs e)
+        {
             this.Cursor = Cursors.Default;
         }
     }
