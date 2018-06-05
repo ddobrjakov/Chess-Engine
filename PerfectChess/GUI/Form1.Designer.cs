@@ -40,7 +40,7 @@
             // TestOutput
             // 
             this.TestOutput.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.TestOutput.Location = new System.Drawing.Point(809, 144);
+            this.TestOutput.Location = new System.Drawing.Point(809, 150);
             this.TestOutput.Name = "TestOutput";
             this.TestOutput.ReadOnly = true;
             this.TestOutput.Size = new System.Drawing.Size(461, 461);
@@ -112,7 +112,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1436, 744);
+            this.ClientSize = new System.Drawing.Size(1560, 744);
             this.Controls.Add(this.Material2);
             this.Controls.Add(this.Material1);
             this.Controls.Add(this.buttonFlip);

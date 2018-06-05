@@ -66,9 +66,9 @@ namespace PerfectChess
             this.BoardView = BoardView;
             BoardView.SetStartPos(StartPosition);
 
-            this.BoardView.AskForFinish += BoardView_AskForFinish;
-            this.BoardView.AskForUndo += BoardView_AskForUndo;
-            this.BoardView.WantNewGame += BoardView_WantNewGame;
+            this.BoardView.AskedForFinish += BoardView_AskForFinish;
+            this.BoardView.AskedForUndo += BoardView_AskForUndo;
+            this.BoardView.NewGameRequested += BoardView_WantNewGame;
             this.BoardView.SquareTapped += BoardView_SquareTapped;
 
 

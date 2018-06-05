@@ -70,6 +70,9 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Global.cs" />
+    <Compile Include="GUI\Log.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="GUI\Presenter.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="GUI\NewGameForm.cs">

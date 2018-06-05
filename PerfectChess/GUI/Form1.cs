@@ -32,7 +32,8 @@ namespace PerfectChess
             //Test.Show();
             //SetGradientBackground(TestOutput, new Point(0, 0), new Point(0, 50), System.Drawing.Color.Black, System.Drawing.Color.FromArgb(0xA3, 0x8f, 0x8f));
 
-            TestOutput.BackColor = System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5);
+            TestOutput.BackColor = System.Drawing.Color.FromArgb(0xce, 0xc5, 0xc5);           
+
 
             BoardPanel = new BoardPanel();
             BoardPanel.Location = new Point(50, 50);
@@ -44,6 +45,15 @@ namespace PerfectChess
 
             BoardPanel.MouseEnter += BoardPanel_MouseEnter;
             BoardPanel.MouseLeave += BoardPanel_MouseLeave;
+
+            //Log = new Log();
+            //Log.Location = new Point(809, 144);
+            //this.Controls.Add(Log);
+            //Log.Columns.Add("1");
+            //Log.FullRowSelect = true;
+            //Log.Items.Add("111");
+            //Log.Items.Add("222");
+
 
             SetStartPos(new Position());
         }
@@ -86,98 +96,19 @@ namespace PerfectChess
             C.BackgroundImageLayout = ImageLayout.Stretch;
         }
 
-
-
-
-        public BoardPanel BoardPanel { get; private set; }
-        public void undoButton_Click(object sender, EventArgs e)
-        {
-            AskForUndo?.Invoke(this, EventArgs.Empty);
-        }
-
-        private Rectangle R = new Rectangle(0, 0, ViewSettings.SQUARESIZE, ViewSettings.SQUARESIZE);
-        private bool MoveStartAllowed = false;
-        private bool MousePressed = false;
-
-        private string _cachedText = String.Empty;
-
-        //Starting the move using the mouse
-        public event EventHandler<Square> SquareTapped;
-        private void BoardPanel_MouseDown(object sender, MouseEventArgs e)
-        {
-            MousePressed = true;
-            Square TappedSquare;
-            try
-            {
-                TappedSquare = BoardPanel.GetSquare(e.Location);
-            }
-            catch
-            {
-                MessageBox.Show("Choose a square to move from");
-                return;
-            }
-            SquareTapped?.Invoke(this, TappedSquare);
-        }
         public void StartMove(Square FROM, List<Square> EmptyAvailibleSquares, List<Square> EnemyAvailibleSquares)
         {
             MoveStartAllowed = true;
 
             _cachedText = TestOutput.Text;
-            BoardPanel.MarkAttacked(EmptyAvailibleSquares);
-            BoardPanel.MarkAttacked(EnemyAvailibleSquares);
-            Identifier = BoardPanel.StartMove(FROM);//MousePosition);
+            BoardPanel.MarkAttacked(EmptyAvailibleSquares, false);
+            BoardPanel.MarkAttacked(EnemyAvailibleSquares, false);
+            Identifier = BoardPanel.StartMove(FROM);
 
-            Point e = BoardPanel.PointToClient(MousePosition);//new Point(100,100);
+            Point e = BoardPanel.PointToClient(MousePosition);
             BoardPanel.ContinueMove(Identifier, new Point(e.X - ViewSettings.SQUARESIZE / 2, e.Y - ViewSettings.SQUARESIZE / 2));
-
             BoardPanel.Refresh();
         }
-        private int Identifier = 0;
-        //Updating the image while mouse moving
-        private void BoardPanel_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (!MoveStartAllowed) return;
-            if (MousePressed)
-            {
-                /*R.Location = new Point(e.X - ViewSettings.SQUARESIZE / 2, e.Y - ViewSettings.SQUARESIZE / 2);
-
-                BoardPanel.Draw(BackgroundWhileMoving);
-                BoardPanel.Draw(ImageMoving, R);
-
-                BoardPanel.Invalidate();*/
-
-                BoardPanel.ContinueMove(Identifier, new Point(e.X - ViewSettings.SQUARESIZE / 2, e.Y - ViewSettings.SQUARESIZE / 2));
-                BoardPanel.Invalidate();
-                BoardPanel.Refresh();
-            }
-        }
-
-        //Finishing the move started by mouse
-        public event EventHandler<Tuple<Square, Square>> AskForFinish;
-        private void BoardPanel_MouseUp(object sender, MouseEventArgs e)
-        {
-            if (MousePressed == false) return;
-            if (!MoveStartAllowed) return;
-            MousePressed = false;
-
-            
-            Square MovingToSquare;
-            try
-            {
-                //Выбросит исключение, если вытащат за пределы доски
-                MovingToSquare = BoardPanel.GetSquare(e.Location);
-            }
-            catch
-            {
-                //Если вытащили за пределы доски, сбросить
-                CancelMove();
-                return;
-            }
-
-
-            AskForFinish?.Invoke(this, new Tuple<Square, Square>(BoardPanel.FromSquare(Identifier), MovingToSquare));
-            MoveStartAllowed = false;
-        }      
         public void FinishMove(int Move)
         {
             //BoardPanel.BackgroundImage = PreSavedBackground;
@@ -200,75 +131,14 @@ namespace PerfectChess
         }
         public void CancelMove()
         {
-            //Рисуем состояние доски до начала хода
-            //BoardPanel.BackgroundImage = PreSavedBackground;
-            //BoardPanel.Invalidate();
-            BoardPanel.DeleteMove(Identifier);
+            BoardPanel.DeleteMove(Identifier, false);
             BoardPanel.DeleteMarkedEffects();
-
             BoardPanel.Refresh();
 
             TestOutput.Text = _cachedText;
 
             MoveStartAllowed = false;
         }
-
-        public int SelectPromotionPiece(int Color)
-        {
-            PromotionForm Prom = new PromotionForm(Color);
-            Prom.StartPosition = FormStartPosition.Manual;
-            Prom.Location = new Point(MousePosition.X - ViewSettings.SQUARESIZE * 4, MousePosition.Y - ViewSettings.SQUARESIZE);
-            Prom.ShowDialog();
-            return Prom.PieceChosen;
-        }
-
-        //Undoing the last move
-        public event EventHandler AskForUndo;
-        public void UndoMove(int MoveToUndo)
-        {
-            BoardPanel.DeleteEffects();
-
-            Square TO = Square.Get(ToSquare(MoveToUndo));
-            Square FROM = Square.Get(FromSquare(MoveToUndo));      
-            if (Castling(MoveToUndo))
-            {
-                Square ROOK_TO = Square.Get((FromSquare(MoveToUndo) + ToSquare(MoveToUndo)) / 2);
-                Square ROOK_FROM = Square.Get((ToSquare(MoveToUndo) > FromSquare(MoveToUndo)) 
-                    ? FromSquare(MoveToUndo) + 3 : FromSquare(MoveToUndo) - 4);
-
-                BoardPanel.PerformMove(ROOK_TO, ROOK_FROM);
-            }
-
-            else if (Promotion(MoveToUndo))
-            {
-                //BoardPanel.ResetSquare(TO);
-                //if (ToPiece(MoveToUndo) != 0) BoardPanel.SetSquareImage(TO, ViewModelConnector.PieceImage[FromPiece(MoveToUndo)]);
-                BoardPanel.SetPiece(TO, FromPiece(MoveToUndo));
-            }
-
-            else if (EnPassant(MoveToUndo))
-            {
-                Square CapturedPawnSquare = Square.Get(ToSquare(MoveToUndo) - 8 + 16 * (FromPiece(MoveToUndo) & Color.Mask));
-                //BoardPanel.SetSquareImage(CapturedPawnSquare, ViewModelConnector.PieceImage[Piece.Pawn | ((1 - FromPiece(MoveToUndo)) & Color.Mask)]);
-                BoardPanel.SetPiece(CapturedPawnSquare, Piece.Pawn | ((1 - FromPiece(MoveToUndo)) & Color.Mask));
-            }
-
-            //Undoing the main part of the move
-            BoardPanel.PerformMove(TO, FROM);
-            BoardPanel.ShowLastMove(FROM, TO);
-            if (ToPiece(MoveToUndo) != 0)
-            {
-                //BoardPanel.SetSquareImage(TO, ViewModelConnector.PieceImage[ToPiece(MoveToUndo)]);
-                BoardPanel.SetPiece(TO, ToPiece(MoveToUndo));
-            }
-
-            BoardPanel.Invalidate(true);
-            BoardPanel.Refresh();
-
-            TestOutput.Text = String.Empty;
-        }
-
-        //Does the engine move
         public void PerformComputerMove(int Move)
         {
             TestOutput.ForeColor = SystemColors.WindowText;
@@ -283,39 +153,66 @@ namespace PerfectChess
 
             BoardPanel.Refresh();
         }
-
-        /// <summary>
-        /// Does the whole move without mouse participation
-        /// </summary>
-        /// <param name="Move"></param>
-        private void PerformMove(int Move)
+        public void SetMaterial(int White, int Black)
         {
-            Square TO = Square.Get(PerfectChess.Move.ToSquare(Move));
-            Square FROM = Square.Get(PerfectChess.Move.FromSquare(Move));
-
-            //Does the main part of the move
-            BoardPanel.PerformMove(FROM, TO);
-
-            //Move the rook if it's castling
-            if (PerfectChess.Move.Castling(Move))
+            if (!BoardPanel.Flipped)
             {
-                Square ROOK_TO = Square.Get((PerfectChess.Move.FromSquare(Move) + PerfectChess.Move.ToSquare(Move)) / 2);
-                Square ROOK_FROM = Square.Get((PerfectChess.Move.ToSquare(Move) > PerfectChess.Move.FromSquare(Move)) ? PerfectChess.Move.FromSquare(Move) + 3 : PerfectChess.Move.FromSquare(Move) - 4);
-                BoardPanel.PerformMove(ROOK_FROM, ROOK_TO);
+                Material1.Text = ((White > 0) ? "+" : "") + White.ToString();
+                Material2.Text = ((Black > 0) ? "+" : "") + Black.ToString();
+            }
+            else
+            {
+                Material2.Text = ((White > 0) ? "+" : "") + White.ToString();
+                Material1.Text = ((Black > 0) ? "+" : "") + Black.ToString();
+            }
+        }
+        public void UndoMove(int MoveToUndo)
+        {
+            BoardPanel.DeleteEffects();
+
+            Square TO = Square.Get(ToSquare(MoveToUndo));
+            Square FROM = Square.Get(FromSquare(MoveToUndo));
+            if (Castling(MoveToUndo))
+            {
+                Square ROOK_TO = Square.Get((FromSquare(MoveToUndo) + ToSquare(MoveToUndo)) / 2);
+                Square ROOK_FROM = Square.Get((ToSquare(MoveToUndo) > FromSquare(MoveToUndo))
+                    ? FromSquare(MoveToUndo) + 3 : FromSquare(MoveToUndo) - 4);
+
+                BoardPanel.PerformMove(ROOK_TO, ROOK_FROM);
             }
 
-            //Places the promotion piece instead of promoted pawn
-            else if (PerfectChess.Move.Promotion(Move))
-                BoardPanel.SetPiece(TO, PerfectChess.Move.PromotionPiece(Move));
+            else if (Promotion(MoveToUndo))
+                BoardPanel.SetPiece(TO, FromPiece(MoveToUndo));
 
-            //Deletes the pawn if it's en passant
-            else if (PerfectChess.Move.EnPassant(Move))
-                BoardPanel.DeletePiece(Square.Get(PerfectChess.Move.ToSquare(Move) - 8 + 16 * (PerfectChess.Move.FromPiece(Move) & Color.Mask)));
+            else if (EnPassant(MoveToUndo))
+            {
+                Square CapturedPawnSquare = Square.Get(ToSquare(MoveToUndo) - 8 + 16 * (FromPiece(MoveToUndo) & Color.Mask));
+                BoardPanel.SetPiece(CapturedPawnSquare, Piece.Pawn | ((1 - FromPiece(MoveToUndo)) & Color.Mask));
+            }
+
+            //Undoing the main part of the move
+            BoardPanel.PerformMove(TO, FROM);
+            BoardPanel.ShowLastMove(FROM, TO);
+            if (ToPiece(MoveToUndo) != 0)
+                BoardPanel.SetPiece(TO, ToPiece(MoveToUndo));
 
             BoardPanel.Invalidate(true);
             BoardPanel.Refresh();
-        }
 
+            TestOutput.Text = String.Empty;
+        }
+        public void SetStartPos(Position P)
+        {
+            BoardPanel.Reset();
+            BoardPanel.SetPosition(P.SquarePiece);
+            BoardPanel.Refresh();
+            TestOutput.Text = "";
+
+            MoveStartAllowed = false;
+            MousePressed = false;
+
+            SetMaterial(0, 0);
+        }
 
         public void Checkmate(bool MovedIsHuman, bool LostIsHuman, int ColorWin)
         {
@@ -370,37 +267,128 @@ namespace PerfectChess
             TestOutput.ScrollToCaret();
         }
 
+
+        public Log Log { get; private set; }
+        public BoardPanel BoardPanel { get; private set; }
+       
+
+        private bool MoveStartAllowed = false;
+        private bool MousePressed = false;
+
+
+        public event EventHandler<Square> SquareTapped;
+        public event EventHandler<Tuple<Square, Square>> AskedForFinish;
+        public event EventHandler AskedForUndo;
         /// <summary>
         /// Параметр кодирует тип игры 2 битами: первый бит на белого игрока, второй на черного - 1 если игрок есть, 0 если компьютер
         /// </summary>
-        public event EventHandler<int> WantNewGame;
-        private void newGameButton_Click(object sender, EventArgs e)
+        public event EventHandler<int> NewGameRequested;
+
+        private string _cachedText = String.Empty;
+        private int Identifier = 0;
+
+
+        private void BoardPanel_MouseDown(object sender, MouseEventArgs e)
         {
-            NewGameForm GameForm = new NewGameForm();
-            GameForm.StartPosition = FormStartPosition.CenterParent;
-            GameForm.ShowDialog();
-            if (GameForm.DialogResult == DialogResult.OK)
+            MousePressed = true;
+            Square TappedSquare;
+            try
             {
-                int State = (GameForm.WhiteHuman ? 1 : 0) * 2 + (GameForm.BlackHuman ? 1 : 0);
-                WantNewGame?.Invoke(this, State);
+                TappedSquare = BoardPanel.GetSquare(e.Location);
             }
-            else
+            catch
             {
-                //Do nothing
+                MessageBox.Show("Choose a square to move from");
+                return;
+            }
+            SquareTapped?.Invoke(this, TappedSquare);
+        }      
+        private void BoardPanel_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!MoveStartAllowed) return;
+            if (MousePressed)
+            {
+                BoardPanel.ContinueMove(Identifier, new Point(e.X - ViewSettings.SQUARESIZE / 2, e.Y - ViewSettings.SQUARESIZE / 2));
+                BoardPanel.Refresh();
             }
         }
-        public void SetStartPos(Position P)
+        private void BoardPanel_MouseUp(object sender, MouseEventArgs e)
         {
-            BoardPanel.Reset();
-            BoardPanel.SetPosition(P.SquarePiece);
-            BoardPanel.Refresh();
-            TestOutput.Text = "";          
-
-            MoveStartAllowed = false;
+            if (MousePressed == false) return;
+            if (!MoveStartAllowed) return;
             MousePressed = false;
 
-            SetMaterial(0, 0);
+            
+            Square MovingToSquare;
+            try
+            {
+                //Выбросит исключение, если вытащат за пределы доски
+                MovingToSquare = BoardPanel.GetSquare(e.Location);
+            }
+            catch
+            {
+                //Если вытащили за пределы доски, сбросить
+                CancelMove();
+                return;
+            }
+
+
+            AskedForFinish?.Invoke(this, new Tuple<Square, Square>(BoardPanel.FromSquare(Identifier), MovingToSquare));
+            MoveStartAllowed = false;
+        }      
+
+
+
+        public int SelectPromotionPiece(int Color)
+        {
+            PromotionForm Prom = new PromotionForm(Color);
+            Prom.StartPosition = FormStartPosition.Manual;
+            Prom.Location = new Point(MousePosition.X - ViewSettings.SQUARESIZE * 4, MousePosition.Y - ViewSettings.SQUARESIZE);
+            Prom.ShowDialog();
+            return Prom.PieceChosen;
         }
+
+
+
+        /// <summary>
+        /// Does the whole move without mouse participation
+        /// </summary>
+        /// <param name="Move"></param>
+        private void PerformMove(int Move)
+        {
+            Square TO = Square.Get(PerfectChess.Move.ToSquare(Move));
+            Square FROM = Square.Get(PerfectChess.Move.FromSquare(Move));
+
+            //Does the main part of the move
+            BoardPanel.PerformMove(FROM, TO);
+
+            //Move the rook if it's castling
+            if (PerfectChess.Move.Castling(Move))
+            {
+                Square ROOK_TO = Square.Get((PerfectChess.Move.FromSquare(Move) + PerfectChess.Move.ToSquare(Move)) / 2);
+                Square ROOK_FROM = Square.Get((PerfectChess.Move.ToSquare(Move) > PerfectChess.Move.FromSquare(Move)) ? PerfectChess.Move.FromSquare(Move) + 3 : PerfectChess.Move.FromSquare(Move) - 4);
+                BoardPanel.PerformMove(ROOK_FROM, ROOK_TO);
+            }
+
+            //Places the promotion piece instead of promoted pawn
+            else if (PerfectChess.Move.Promotion(Move))
+                BoardPanel.SetPiece(TO, PerfectChess.Move.PromotionPiece(Move));
+
+            //Deletes the pawn if it's en passant
+            else if (PerfectChess.Move.EnPassant(Move))
+                BoardPanel.DeletePiece(Square.Get(PerfectChess.Move.ToSquare(Move) - 8 + 16 * (PerfectChess.Move.FromPiece(Move) & Color.Mask)));
+
+            BoardPanel.Invalidate(true);
+            BoardPanel.Refresh();
+        }
+
+
+
+
+
+
+        
+
 
         private void buttonFlip_Click(object sender, EventArgs e)
         {
@@ -410,19 +398,24 @@ namespace PerfectChess
             Material1.Text = Material2.Text;
             Material2.Text = tmp;
         }
-
-        public void SetMaterial(int White, int Black)
+        private void newGameButton_Click(object sender, EventArgs e)
         {
-            if (!BoardPanel.Flipped)
+            NewGameForm GameForm = new NewGameForm();
+            GameForm.StartPosition = FormStartPosition.CenterParent;
+            GameForm.ShowDialog();
+            if (GameForm.DialogResult == DialogResult.OK)
             {
-                Material1.Text = ((White > 0) ? "+" : "") + White.ToString();
-                Material2.Text = ((Black > 0) ? "+" : "") + Black.ToString();
+                int State = (GameForm.WhiteHuman ? 1 : 0) * 2 + (GameForm.BlackHuman ? 1 : 0);
+                NewGameRequested?.Invoke(this, State);
             }
             else
             {
-                Material2.Text = ((White > 0) ? "+" : "") + White.ToString();
-                Material1.Text = ((Black > 0) ? "+" : "") + Black.ToString();
+                //Do nothing
             }
+        }
+        private void undoButton_Click(object sender, EventArgs e)
+        {
+            AskedForUndo?.Invoke(this, EventArgs.Empty);
         }
 
         private void newGameButton_MouseEnter(object sender, EventArgs e)
