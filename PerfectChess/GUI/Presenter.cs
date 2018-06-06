@@ -38,7 +38,7 @@ namespace PerfectChess
             if (PreMoves.Any()) MakeMove(PreMoves.Pop());
             else
             {
-                int Move = -1;
+                int Move = -10;
                 await Task.Run(() => Move = E.BestMove(P));
                 MakeMove(Move);
             }
@@ -58,7 +58,7 @@ namespace PerfectChess
 
     public class Presenter
     {
-        public Presenter(Form1 BoardView, Player PlayerWhite, Player PlayerBlack, Position StartPosition)
+        public Presenter(BoardView BoardView, Player PlayerWhite, Player PlayerBlack, Position StartPosition)
         {
             this.PlayerWhite = PlayerWhite;
             this.PlayerBlack = PlayerBlack;
@@ -88,16 +88,23 @@ namespace PerfectChess
             GamePosition = new Position();
             BoardView.SetStartPos(GamePosition);
 
-            if (PlayerBlack is HumanPlayer && PlayerWhite is EnginePlayer && !BoardView.BoardPanel.Flipped)
-                BoardView.BoardPanel.Flip();
-            if (PlayerWhite is HumanPlayer && PlayerBlack is EnginePlayer && BoardView.BoardPanel.Flipped)
-                BoardView.BoardPanel.Flip();
+            if (PlayerBlack is HumanPlayer && PlayerWhite is EnginePlayer && !BoardView.Flipped)
+                BoardView.Flip();
+            if (PlayerWhite is HumanPlayer && PlayerBlack is EnginePlayer && BoardView.Flipped)
+                BoardView.Flip();
 
             PlayerWhite.YourMove(GamePosition);
         }
         private void BoardView_SquareTapped(object sender, Square S)
         {
-            if (PlayerToMove is EnginePlayer && PlayerWaiting is EnginePlayer) MessageBox.Show("Don't bother the comps! Let them play!");
+            //Game is finished
+            if (GamePosition.Status != Position.GameResult.InProcess)
+            {
+                return;
+            }
+
+
+            if (PlayerToMove is EnginePlayer && PlayerWaiting is EnginePlayer) { MessageBox.Show("Don't bother the comps! Let them play!"); return; }
             int Piece = GamePosition[S.X + 8 * S.Y];
             if (Piece == 0) return;
             if (PlayerToMove is EnginePlayer && ((Piece & Color.Mask) == ((PlayerToMove == PlayerWhite) ? Color.White : Color.Black))) return;
@@ -119,6 +126,13 @@ namespace PerfectChess
         }
         private void BoardView_AskForFinish(object sender, Tuple<Square, Square> e)
         {
+            //Game is finished
+            if (GamePosition.Status != Position.GameResult.InProcess)
+            {
+                BoardView.CancelMove();
+                MessageBox.Show("Error. Can't finish the move. Game is finished.");
+            }
+
             int? Move = ConvertMove(e.Item1, e.Item2, GamePosition);
             if (Move is null) BoardView.CancelMove();
             else
@@ -143,11 +157,30 @@ namespace PerfectChess
             return AppropriateMoves.First();
         }
 
+
+        /// <summary>
+        /// Player wants to play a move
+        /// </summary>
+        /// <param name="sender">Player</param>
+        /// <param name="Move">Move to play</param>
         private void Player_MakesMove(object sender, int Move)
         {
+            if (GamePosition.Status != Position.GameResult.InProcess)
+            {
+                MessageBox.Show("Error. Game is finished. No moves allowed");
+            }
+
+            //Engine tried to move but couldn't
+            if (Move == Engine.NO_MOVES)
+            {
+                MessageBox.Show(PerfectChess.Move.Details(Move));
+                return;
+            }
+
             //Check for legality
             if (!GamePosition.LegalMoves().Contains(Move))
             {
+                MessageBox.Show(PerfectChess.Move.Details(Move));
                 return;
             }
 
@@ -158,7 +191,11 @@ namespace PerfectChess
 
             //Add visual move effects
             ApplyMoveEffects();
-            if (GamePosition.GameFinished) return;
+            if (GamePosition.Status != Position.GameResult.InProcess)
+            {
+                return;
+            }
+            //if (GamePosition.GameFinished) return;
 
             //Tell the other guy he can move
             PlayerToMove.YourMove(GamePosition.DeepCopy());
@@ -178,7 +215,11 @@ namespace PerfectChess
             }
             //Stalemate
             else if (GamePosition.Stalemate) BoardView.Stalemate();
-
+            //Draw by fifty-move rule
+            else
+            {
+                if (GamePosition.MovesFiftyRuleCount >= 50) BoardView.FiftyMoveRule();
+            }
             if (Global.USE_TEST)
             {
                 if (PlayerWaiting is EnginePlayer)
@@ -189,8 +230,9 @@ namespace PerfectChess
                     Test.ShowStats("Total positions evaluated: " + EP.TEST_Evaluated.ToString() + " (" + Math.Round(EP.TEST_Evaluated/EP.TEST_ThinkTime.TotalSeconds) + " n/s)\n");
                     Test.ShowStats("LegalMoves calculated " + EP.TEST_LegalMovesCallCount.ToString() + " times\n");
                     //Test.ShowStats("Attacks called " + EP.TEST_AttacksCallCount.ToString() + " times\n");
-                    Test.ShowStats("\n");
+                    //Test.ShowStats("\n");
                 }
+                Test.ShowStats("Moves fifty-rule: " + GamePosition.MovesFiftyRuleCount.ToString() + "\n\n");
             }
 
             int WhiteMaterialAdvantage = CountMaterial();
@@ -236,7 +278,7 @@ namespace PerfectChess
         private Player PlayerWhite;
         private Player PlayerBlack;
         private Position GamePosition;
-        private Form1 BoardView;
+        private BoardView BoardView;
 
         private Player PlayerToMove => (this.GamePosition.ColorToMove == Color.White) ? this.PlayerWhite : this.PlayerBlack;
         private Player PlayerWaiting => (this.GamePosition.ColorToMove == Color.Black) ? this.PlayerWhite : this.PlayerBlack;

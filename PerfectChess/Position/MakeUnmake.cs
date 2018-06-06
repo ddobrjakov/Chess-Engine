@@ -17,6 +17,16 @@ namespace PerfectChess
             int fromPiece = PerfectChess.Move.FromPiece(Move);
             int toPiece = PerfectChess.Move.ToPiece(Move);
 
+            //Fifty move rule
+            if (toPiece != 0 || (fromPiece & Piece.Mask) == Piece.Pawn)
+            {
+                MovesFiftyHistory.Push(0);
+            }
+            else
+            {
+                MovesFiftyHistory.Push(MovesFiftyRuleCount + 1);
+            }
+
             //Moving
             SquarePiece[toSquare] = SquarePiece[fromSquare];
             SquarePiece[fromSquare] = 0;
@@ -153,6 +163,9 @@ namespace PerfectChess
             int toSquare = Move.ToSquare(MoveToUnmake);
             int fromPiece = Move.FromPiece(MoveToUnmake);
             int toPiece = Move.ToPiece(MoveToUnmake);
+
+            MovesFiftyHistory.Pop();
+
 
             //Moving Back And Cancelling Capturing
             SquarePiece[toSquare] = toPiece;

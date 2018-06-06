@@ -14,7 +14,7 @@ using System.Drawing.Drawing2D;
 
 namespace PerfectChess
 {
-    public partial class Form1 : Form
+    public partial class Form1 : Form, BoardView
     {
         public Form1()
         {
@@ -214,6 +214,7 @@ namespace PerfectChess
             SetMaterial(0, 0);
         }
 
+
         public void Checkmate(bool MovedIsHuman, bool LostIsHuman, int ColorWin)
         {
             string winloss = "Checkmate!\n";
@@ -259,6 +260,10 @@ namespace PerfectChess
             TestOutput.SelectionStart = TestOutput.TextLength;
             TestOutput.ScrollToCaret();
         }
+        public void FiftyMoveRule()
+        {
+            MessageBox.Show("Game is drawn by fifty-move rule");
+        }
         public void Title(string Text)
         {
             this.Text = Text;
@@ -266,76 +271,33 @@ namespace PerfectChess
             TestOutput.SelectionStart = TestOutput.TextLength;
             TestOutput.ScrollToCaret();
         }
+        public void Flip()
+        {
+            this.BoardPanel.Flip();
+        }
+        public bool Flipped => BoardPanel.Flipped;
 
+
+        private Stack<string> MoveLog = new Stack<string>();
 
         public Log Log { get; private set; }
         public BoardPanel BoardPanel { get; private set; }
        
-
+        /// <summary>
+        /// Is needed to check if piece should be moved by mouse
+        /// </summary>
         private bool MoveStartAllowed = false;
         private bool MousePressed = false;
 
 
-        public event EventHandler<Square> SquareTapped;
-        public event EventHandler<Tuple<Square, Square>> AskedForFinish;
-        public event EventHandler AskedForUndo;
-        /// <summary>
-        /// Параметр кодирует тип игры 2 битами: первый бит на белого игрока, второй на черного - 1 если игрок есть, 0 если компьютер
-        /// </summary>
-        public event EventHandler<int> NewGameRequested;
+
+
 
         private string _cachedText = String.Empty;
         private int Identifier = 0;
 
 
-        private void BoardPanel_MouseDown(object sender, MouseEventArgs e)
-        {
-            MousePressed = true;
-            Square TappedSquare;
-            try
-            {
-                TappedSquare = BoardPanel.GetSquare(e.Location);
-            }
-            catch
-            {
-                MessageBox.Show("Choose a square to move from");
-                return;
-            }
-            SquareTapped?.Invoke(this, TappedSquare);
-        }      
-        private void BoardPanel_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (!MoveStartAllowed) return;
-            if (MousePressed)
-            {
-                BoardPanel.ContinueMove(Identifier, new Point(e.X - ViewSettings.SQUARESIZE / 2, e.Y - ViewSettings.SQUARESIZE / 2));
-                BoardPanel.Refresh();
-            }
-        }
-        private void BoardPanel_MouseUp(object sender, MouseEventArgs e)
-        {
-            if (MousePressed == false) return;
-            if (!MoveStartAllowed) return;
-            MousePressed = false;
 
-            
-            Square MovingToSquare;
-            try
-            {
-                //Выбросит исключение, если вытащат за пределы доски
-                MovingToSquare = BoardPanel.GetSquare(e.Location);
-            }
-            catch
-            {
-                //Если вытащили за пределы доски, сбросить
-                CancelMove();
-                return;
-            }
-
-
-            AskedForFinish?.Invoke(this, new Tuple<Square, Square>(BoardPanel.FromSquare(Identifier), MovingToSquare));
-            MoveStartAllowed = false;
-        }      
 
 
 
@@ -386,9 +348,62 @@ namespace PerfectChess
 
 
 
+        /// <summary>
+        /// Параметр кодирует тип игры 2 битами: первый бит на белого игрока, второй на черного - 1 если игрок есть, 0 если компьютер
+        /// </summary>
+        public event EventHandler<int> NewGameRequested;
+        public event EventHandler<Square> SquareTapped;
+        public event EventHandler<Tuple<Square, Square>> AskedForFinish;
+        public event EventHandler AskedForUndo;
 
-        
+        private void BoardPanel_MouseDown(object sender, MouseEventArgs e)
+        {
+            MousePressed = true;
+            Square TappedSquare;
+            try
+            {
+                TappedSquare = BoardPanel.GetSquare(e.Location);
+            }
+            catch
+            {
+                MessageBox.Show("Choose a square to move from");
+                return;
+            }
+            SquareTapped?.Invoke(this, TappedSquare);
+        }
+        private void BoardPanel_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!MoveStartAllowed) return;
+            if (MousePressed)
+            {
+                BoardPanel.ContinueMove(Identifier, new Point(e.X - ViewSettings.SQUARESIZE / 2, e.Y - ViewSettings.SQUARESIZE / 2));
+                BoardPanel.Refresh();
+            }
+        }
+        private void BoardPanel_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (MousePressed == false) return;
+            if (!MoveStartAllowed) return;
+            MousePressed = false;
 
+
+            Square MovingToSquare;
+            try
+            {
+                //Выбросит исключение, если вытащат за пределы доски
+                MovingToSquare = BoardPanel.GetSquare(e.Location);
+            }
+            catch
+            {
+                //Если вытащили за пределы доски, сбросить
+                CancelMove();
+                return;
+            }
+
+
+            AskedForFinish?.Invoke(this, new Tuple<Square, Square>(BoardPanel.FromSquare(Identifier), MovingToSquare));
+            MoveStartAllowed = false;
+        }
 
         private void buttonFlip_Click(object sender, EventArgs e)
         {
@@ -472,4 +487,28 @@ namespace PerfectChess
         }
     }
 
+
+    public interface BoardView
+    {
+        void Checkmate(bool MovedIsHuman, bool LostIsHuman, int ColorWin);
+        void Stalemate();
+        void Check(bool Win);
+        void FiftyMoveRule();
+        int SelectPromotionPiece(int Color);
+        void Flip();
+        bool Flipped { get; }
+
+        void StartMove(Square FROM, List<Square> EmptyAvailibleSquares, List<Square> EnemyAvailibleSquares);
+        void CancelMove();
+        void FinishMove(int Move);
+        void UndoMove(int MoveToUndo);
+        void PerformComputerMove(int Move);
+        void SetMaterial(int White, int Black);
+        void SetStartPos(Position P);
+
+        event EventHandler<int> NewGameRequested;
+        event EventHandler<Square> SquareTapped;
+        event EventHandler<Tuple<Square, Square>> AskedForFinish;
+        event EventHandler AskedForUndo;
+    }
 }

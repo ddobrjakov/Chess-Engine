@@ -89,6 +89,13 @@ namespace PerfectChess
         private int HalfMoves => MoveHistory.Count();
 
         /// <summary>
+        /// Stores the number of no pawn moves and no capturing moves in a row 
+        /// </summary>
+        public int MovesFiftyRuleCount => (MovesFiftyHistory.Any()) ? MovesFiftyHistory.Peek() : 0;
+
+        private Stack<int> MovesFiftyHistory = new Stack<int>();
+
+        /// <summary>
         /// Stores the history of moves made, particularly needed as the source for unmaking moves
         /// </summary>
         private Stack<int> MoveHistory = new Stack<int>();
@@ -113,7 +120,7 @@ namespace PerfectChess
         /// <summary>
         /// Returns the file of the given square
         /// </summary>
-        /// <param name="square"></param>
+        /// <param name="square">Square to get file of</param>
         /// <returns></returns>
         public static int File(int square)
         {
@@ -123,7 +130,7 @@ namespace PerfectChess
         /// <summary>
         /// Returns the rank of the given square
         /// </summary>
-        /// <param name="square"></param>
+        /// <param name="square">Square to get rank of</param>
         /// <returns></returns>
         public static int Rank(int square)
         {
@@ -153,8 +160,8 @@ namespace PerfectChess
         /// <summary>
         /// Returns if the given square with a piece of given color is attcked
         /// </summary>
-        /// <param name="Color"></param>
-        /// <param name="Square"></param>
+        /// <param name="Color">Color we assuming piece on this square has</param>
+        /// <param name="Square">Square to check for attacks on</param>
         /// <returns></returns>
         public bool IsAttacked(int Color, int Square)
         {
@@ -235,7 +242,23 @@ namespace PerfectChess
         /// </summary>
         public bool Stalemate => !LegalMoves().Any() && !Check;
 
-        public bool GameFinished => !LegalMoves().Any();
+        public bool GameFinished => !LegalMoves().Any() || MovesFiftyRuleCount >= 50;
+
+        public enum GameResult { WhiteWinCheckmate, BlackWinCheckmate, DrawStalemate, DrawFiftyMoves, InProcess }
+        public GameResult Status
+        {
+            get
+            {
+                if (MovesFiftyRuleCount >= 50) return GameResult.DrawFiftyMoves;
+                if (!LegalMoves().Any())
+                {
+                    if (Check) return (ColorToMove == Color.Black) ? GameResult.WhiteWinCheckmate : GameResult.BlackWinCheckmate;
+                    else return GameResult.DrawStalemate;
+                }
+                return GameResult.InProcess;
+            }
+        }
+
 
         /// <summary>
         /// Returns new copy of current Position entity

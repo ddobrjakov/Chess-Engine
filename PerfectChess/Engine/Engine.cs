@@ -14,33 +14,153 @@ namespace PerfectChess
         {
             //Test.Show();
         }
-        private Position Pos;
-        private Random R = new Random();
-        private TestForm Test = new TestForm();
 
-        public int BestMove(Position P)
+        /// <summary>
+        /// Current position engine analyzes
+        /// </summary>
+        private Position Pos;
+
+        /// <summary>
+        /// Used for avoiding repeating the same moves each game
+        /// </summary>
+        private Random R = new Random();
+
+        /// <summary>
+        /// Returns best move in given position
+        /// If no moves are possible, returns special value
+        /// </summary>
+        /// <param name="PositionToAnalyze">Position to analyze</param>
+        /// <returns></returns>
+        public int BestMove(Position PositionToAnalyze)
         {
-            //Testing
-            //if (Test != null) Test.Show();
-            //Test.Reset();
+            //Meta-data and testing set-up
             TEST_Nodes = 0;
             TEST_Evaluated = 0;
             this.IsThinking = true;
             DateTime TimeBefore = DateTime.Now;
-            int Res = BestMoveAlphaBetaApproach(P);
+            MovesWithScore = new Dictionary<int, List<int>>();
+
+            //Finding the best move using Alpha-Beta approach
+            int Depth = Engine.Depth;
+            int Res = BestMove_AlphaBetaApproach(PositionToAnalyze, Depth);
+
+            //Meta-data and testing set-up
             DateTime TimeAfter = DateTime.Now;
             this.IsThinking = false;
             TEST_ThinkTime = TimeAfter - TimeBefore;
 
             return Res;
         }
+
+        /// <summary>
+        /// Returns if engine is evaluating position at the moment
+        /// </summary>
         public bool IsThinking { get; private set; }
 
-        public int TEST_Evaluated = 0;
-        public TimeSpan TEST_ThinkTime = new TimeSpan();
-        public int TEST_LegalMovesCallCount => Pos.TEST_LegalMovesCallCount;
-        public int TEST_AttacksCallCount => Pos.TEST_AttacksCallCount;
-        public int TEST_Nodes = 0;
+        /// <summary>
+        /// Returns the best move in position or special value if no moves, using Alpha-Beta pruning approach and looking until given depth
+        /// </summary>
+        /// <param name="PositionToAnalyze">Position to analyze</param>
+        /// <param name="Depth">Depth to search to</param>
+        /// <returns></returns>
+        private int BestMove_AlphaBetaApproach(Position PositionToAnalyze, int Depth)
+        {
+            //Copying the position (so that sender can use it while we're busy with evaluating)
+            this.Pos = PositionToAnalyze.DeepCopy();
+
+            //Early evaluation finish in case of fifty-move rule
+            if (Pos.MovesFiftyRuleCount >= 50) return NoMovesDrawFiftyRule;
+
+            int alpha = Evaluation.Min;
+            int beta = Evaluation.Max;
+
+            if (Pos.ColorToMove == White)
+            {
+                foreach (int Move in SortedMoves(Pos))
+                {
+                    Pos.Make(Move);
+                    //Pruning happens with taking into account rating deviation for move randomisitation
+                    //-1 so that positions that are just as good as the current alpha are not pruned
+                    int score = AlphaBetaMin(Depth - 1, alpha - 1 - RandomisationMaxDifference, beta);
+                    Pos.UnMake();
+
+                    if (score > alpha) alpha = score;
+                    AddMove(score, Move);
+                }
+
+
+                //No moves
+                if (!MovesWithScore.Keys.Contains(alpha))
+                {
+                    return NO_MOVES;
+                    //switch (Pos.Status)
+                    //{
+                    //    case Position.GameResult.BlackWinCheckmate:
+                    //    case Position.GameResult.WhiteWinCheckmate:
+                    //        return NoMovesCheckmate;
+                    //    case Position.GameResult.DrawStalemate
+                    //        return 
+                    //}
+                }
+                else
+                {
+                    //Getting all the potential moves - moves with score which suits us
+                    IEnumerable<int> PotentialMoves = Enumerable.Empty<int>();
+                    foreach (int Key in MovesWithScore.Keys.OrderBy(key => key).Where(key => ((key >= alpha - RandomisationMaxDifference) && key >= 0 && key <= Evaluation.CheckmateCost - 1000) || key == alpha))
+                        PotentialMoves = PotentialMoves.Concat(MovesWithScore[Key]);
+
+                    List<int> ListMoves = PotentialMoves.ToList();
+                    return ListMoves[R.Next(ListMoves.Count)];
+                    //bestmove = BestMoves[alpha][R.Next(BestMoves[alpha].Count())];
+                }
+            }
+            else
+            {
+                foreach (int Move in SortedMoves(Pos))
+                {
+                    Pos.Make(Move);
+                    //Pruning happens with taking into account rating deviation for move randomisitation
+                    //+1 so that positions that are just as good as the current beta are not pruned
+                    int score = AlphaBetaMax(Depth - 1, alpha, beta + 1 + RandomisationMaxDifference);
+                    Pos.UnMake();
+
+                    if (score < beta) beta = score;
+                    AddMove(score, Move);
+                }
+
+
+
+
+                //No moves
+                if (!MovesWithScore.Keys.Contains(beta)) return NO_MOVES;
+                else
+                {
+                    IEnumerable<int> PotentialMoves = Enumerable.Empty<int>();
+                    foreach (int Key in MovesWithScore.Keys.Where(key => ((key <= beta + RandomisationMaxDifference) && key <= 0 && key >= -Evaluation.CheckmateCost + 1000) || key == beta))
+                        PotentialMoves = PotentialMoves.Concat(MovesWithScore[Key]);
+
+                    List<int> ListMoves = PotentialMoves.ToList();
+                    return ListMoves[R.Next(ListMoves.Count)];
+                    //bestmove = BestMoves[beta][R.Next(BestMoves[beta].Count())];
+                    ///Test.ShowStats("\nFinal Best: " + Move.Details(bestmove) + " (" + beta + ")" + "\n");
+                    ///string other = String.Empty;
+                    ///other += "Randomly choosed from (" + BestMoves[beta].Count + "): \n";
+                    ///foreach (int move in BestMoves[beta])
+                    ///    other += "  " + Move.Details(move) + "\n";
+                    ///Test.ShowStats(other);
+                }
+            }
+        }
+
+        //Dictionary to store all the moves with it's evaluation as a key
+        private Dictionary<int, List<int>> MovesWithScore = new Dictionary<int, List<int>>();
+        private void AddMove(int Score, int Move)
+        {
+            if (MovesWithScore.Keys.Contains(Score)) MovesWithScore[Score].Add(Move);
+            else MovesWithScore.Add(Score, new List<int> { Move });
+        }
+
+
 
         private int Evaluate()
         {
@@ -49,11 +169,13 @@ namespace PerfectChess
             for (int Color = White; Color <= Black; Color++)
             {
                 //Pawns
+                bool EndingPawns = (Pos.PieceBitboard[Queen | Black] | Pos.PieceBitboard[Queen | White]) == 0;
+                int[] PawnPositionTable = EndingPawns ? Evaluation.PawnPositionTableEnding[Color] : Evaluation.PawnPositionTable[Color];
                 UInt64 pawnBitboard = Pos.PieceBitboard[Pawn | Color];
                 while (pawnBitboard != 0)
                 {
                     int Index = BitOperations.PopLS(ref pawnBitboard);
-                    value[Color] += Evaluation.PawnCost + Evaluation.PawnPositionTable[Color][Index];
+                    value[Color] += Evaluation.PawnCost + PawnPositionTable[Index];
                 }
 
                 //Knights
@@ -85,7 +207,7 @@ namespace PerfectChess
 
 
                 //Kings
-                bool Ending = (Pos.PieceBitboard[Queen] == 0);
+                bool Ending = ((Pos.PieceBitboard[Queen | Black] | Pos.PieceBitboard[Queen | White]) == 0);
                 int[] PositionTable = Ending ? Evaluation.KingPositionEnding[Color] : Evaluation.KingPositionOpening[Color];
                 UInt64 kingBitboard = Pos.PieceBitboard[King | Color];
                 while (kingBitboard != 0)
@@ -199,99 +321,19 @@ namespace PerfectChess
         }
         #endregion
 
-        private int BestMoveAlphaBetaApproach(Position P)
-        {
-            this.Pos = P.DeepCopy();
-            int Depth = Engine.Depth;
 
-            int alpha = Evaluation.Min;
-            int beta = Evaluation.Max;
-            int bestmove;
-
-            //Dictionary used to store all the moves with it's evaluation as a key
-            Dictionary<int, List<int>> BestMoves = new Dictionary<int, List<int>>();
-
-            if (Pos.ColorToMove == White)
-            {
-                foreach (int Move in SortedMoves(Pos))
-                {
-                    Pos.Make(Move);
-                    int score = AlphaBetaMin(Depth - 1, alpha - 1 - RandomisationMaxDifference, beta);
-                    Pos.UnMake();
-
-                    ///Test.ShowStats("\n" + PerfectChess.Move.Details(Move) + " — " + score + " (best: " + alpha + ")");
-                    if (score > alpha)
-                    {
-                        ///Test.ShowStats(" — New Best!");
-                        alpha = score;
-                    }
-                    if (BestMoves.Keys.Contains(score)) BestMoves[score].Add(Move);
-                    else BestMoves.Add(score, new List<int> { Move });
-                }
-                //No moves
-                if (!BestMoves.Keys.Contains(alpha)) bestmove = -1;
-                else
-                {
-                    IEnumerable<int> PotentialMoves = Enumerable.Empty<int>();
-                    foreach (int Key in BestMoves.Keys.OrderBy(key => key).Where(key => ((key >= alpha - RandomisationMaxDifference) && key >= 0 && key <= Evaluation.CheckmateCost - 1000) || key == alpha))
-                        PotentialMoves = PotentialMoves.Concat(BestMoves[Key]);
-
-                    List<int> ListMoves = PotentialMoves.ToList();
-                    bestmove = ListMoves[R.Next(ListMoves.Count)];
-                    //bestmove = BestMoves[alpha][R.Next(BestMoves[alpha].Count())];
-                }
-            }
-            else
-            {
-                foreach (int Move in SortedMoves(Pos))
-                {
-                    Pos.Make(Move);
-                    //+1 so that positions that are just as good as the current beta are counted to random generator
-                    int score = AlphaBetaMax(Depth - 1, alpha, beta + 1 + RandomisationMaxDifference);
-                    Pos.UnMake();
-
-                    ///Test.ShowStats("\n" + PerfectChess.Move.Details(Move) + " — " + score + " (best: " + beta + ")");
-                    if (score < beta)
-                    {
-                        ///Test.ShowStats(" — New Best!");
-                        beta = score;
-                    }
-                    if (BestMoves.Keys.Contains(score)) BestMoves[score].Add(Move);
-                    else BestMoves.Add(score, new List<int> { Move });
-                }
-
-
-
-
-                //No moves
-                if (!BestMoves.Keys.Contains(beta)) bestmove = -1;
-                else
-                {
-                    IEnumerable<int> PotentialMoves = Enumerable.Empty<int>();
-                    foreach (int Key in BestMoves.Keys.Where(key => ((key <= beta + RandomisationMaxDifference) && key <= 0 && key >= -Evaluation.CheckmateCost + 1000) || key == beta))
-                        PotentialMoves = PotentialMoves.Concat(BestMoves[Key]);
-
-                    List<int> ListMoves = PotentialMoves.ToList();
-                    bestmove = ListMoves[R.Next(ListMoves.Count)];
-                    //bestmove = BestMoves[beta][R.Next(BestMoves[beta].Count())];
-                    ///Test.ShowStats("\nFinal Best: " + Move.Details(bestmove) + " (" + beta + ")" + "\n");
-                    ///string other = String.Empty;
-                    ///other += "Randomly choosed from (" + BestMoves[beta].Count + "): \n";
-                    ///foreach (int move in BestMoves[beta])
-                    ///    other += "  " + Move.Details(move) + "\n";
-                    ///Test.ShowStats(other);
-                }
-            }
-            
-            return bestmove;
-        }
-
-
+        public const int NO_MOVES = -1;
+        public const int NoMovesStalemate = -5;
+        public const int NoMovesCheckmate = -2;
+        public const int NoMovesDrawFiftyRule = -3;
 
         private int AlphaBetaMax(int Depth, int alpha, int beta)
         {
             TEST_Nodes++;
+            if (Pos.MovesFiftyRuleCount >= 50) return 0;
             if (Depth == 0) return Evaluate();
+
+
             bool Moves = false;
             foreach (int Move in SortedMoves(Pos))//Pos.LegalMoves())
             {
@@ -316,6 +358,7 @@ namespace PerfectChess
         private int AlphaBetaMin(int Depth, int alpha, int beta)
         {
             TEST_Nodes++;
+            if (Pos.MovesFiftyRuleCount >= 50) return 0;
             if (Depth == 0) return Evaluate();
 
             bool Moves = false;
@@ -349,78 +392,14 @@ namespace PerfectChess
             for (int i = 0; i < Moves.Length; i++)
                 MovesRating[i] = MoveRating(Moves[i], P);
 
-            SortMoves(Moves, MovesRating, TopMovesCount);
+            SortMoves(Moves, MovesRating, 0);
             return Moves;
         }
         private void SortMoves(int[] Moves, int[] Values, int Count)
         {
             Array.Sort(Values, Moves, Comparer<int>.Create(new Comparison<int>((a, b) => (a <= b) ? 1 : -1)));
-
-
-            /*int maxindex = 0;
-            for (int i = 0; i < Math.Min(Count, Moves.Length); i++)
-            {
-                maxindex = i;
-
-                for (int j = i + 1; j < Moves.Length; j++)
-                {
-                    if (Values[j] > Values[maxindex])
-                    {
-                        maxindex = j;
-                    }
-                }
-                if (maxindex != i)
-                {
-                    int tmp = Moves[i];
-                    Moves[i] = Moves[maxindex];
-                    Moves[maxindex] = tmp;
-
-                    int rtmp = Values[i];
-                    Values[i] = Values[maxindex];
-                    Values[maxindex] = rtmp;
-                }
-            }*/
-        }
-        /*private class TopMoves
-        {
-            private (int move, int rating)[] Moves = new (int move, int rating)[3];
-            private (int move, int rating) WorstMove => Moves[Moves.Length - 1];
-            public void AddIfBetter(int Move, int Rating)
-            {
-                if (Rating > WorstMove.Rating)
-            }
-        }*/
-        private const int TopMovesCount = 6;
-
-
-        private IEnumerable<int> FirstPlySortMoves(Position P)
-        {
-            int[] Moves = P.LegalMoves().ToArray();
-            int[] MovesRating = new int[Moves.Length];
-            for (int i = 0; i < Moves.Length; i++)
-            {
-                MovesRating[i] = FirstPlyMoveRating(Moves[i], P);
-            }
-            Array.Sort(MovesRating, Moves);
-            return Moves.Reverse();
         }
 
-        /*private class MoveComparer : IComparer<int>
-        {
-            public MoveComparer(List<int> Moves)
-            {
-                foreach (int Move in Moves)
-                {
-                    MovesRating.Add(Move, MoveRating(Move));
-                }
-            }
-            public int Compare(int x, int y)
-            {
-                MovesRating.
-                throw new NotImplementedException();
-            }
-            Dictionary<int, int> MovesRating = new Dictionary<int, int>();
-        }*/
         private int MoveRating(int M, Position P)
         {
             //Good captures first
@@ -433,49 +412,19 @@ namespace PerfectChess
                     return (LVA_MVV + 2) * 5;
                 }
                 return (LVA_MVV - 2) * 5;
-                //int LastSquare = ((P.AnyMoves && Move.ToSquare((int)(P.LastMove)) == Move.ToSquare(M)) ? LVA_MVV > 0 ? 20 : 2)
-                //if (LVA_MVV < 0)
-                //{
-                //
-                //}
             }
-            //if (P.Attacks(Move.ToSquare((int)(P.LastMove)), Move.FromSquare(M))) return 5;
             return 0;
-
-
-
-            /*int add = 0;
-            if (P.Attacks(Move.ToSquare((int)(P.LastMove)), Move.FromSquare(M))) add += 2;
-            //if (P.AnyMoves && Move.ToSquare((int)(P.LastMove)) == Move.ToSquare(M))  
-            //Encourage capturing, capturing piece should be smaller, captured - bigger
-            if (Move.ToPiece(M) != 0)
-            {
-                return Move.ToPiece(M) & Piece.Mask - Move.FromPiece(M) & Piece.Mask + 1 + 
-                        ((P.AnyMoves && Move.ToSquare((int)(P.LastMove)) == Move.ToSquare(M)) ? ((Move.ToPiece((int)(P.LastMove)) != 0) ? 20 : 2) : 0) + add;
-            }       
-            return 0;*/
         }
-        private int FirstPlyMoveRating(int M, Position P)
-        {
-            int addon = 0;
-            if (P.AnyMoves && P.Attacks(Move.ToSquare((int)(P.LastMove)), Move.FromSquare(M))) addon = 500;
-            if (Move.ToPiece(M) != 0)
-            {
-                int LVA_MVV = Move.ToPiece(M) & Piece.Mask - Move.FromPiece(M) & Piece.Mask;
-                if (LVA_MVV >= 0)
-                {
-                    if (P.AnyMoves && Move.ToSquare((int)(P.LastMove)) == Move.ToSquare(M)) return (LVA_MVV + 2) * 5 + 200 + addon;
-                    return (LVA_MVV + 2) * 5 + addon;
-                }
-                return (LVA_MVV - 2) * 5 + addon;
-                //int LastSquare = ((P.AnyMoves && Move.ToSquare((int)(P.LastMove)) == Move.ToSquare(M)) ? LVA_MVV > 0 ? 20 : 2)
-                //if (LVA_MVV < 0)
-                //{
-                //
-                //}
-            }
-            //if (P.Attacks(Move.ToSquare((int)(P.LastMove)), Move.FromSquare(M))) return 5;
-            return addon;
-        }
+
+
+
+
+        #region TESTING
+        public int TEST_Evaluated = 0;
+        public TimeSpan TEST_ThinkTime = new TimeSpan();
+        public int TEST_LegalMovesCallCount => Pos.TEST_LegalMovesCallCount;
+        public int TEST_AttacksCallCount => Pos.TEST_AttacksCallCount;
+        public int TEST_Nodes = 0;
+        #endregion
     }
 }

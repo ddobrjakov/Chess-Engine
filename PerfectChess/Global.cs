@@ -8,6 +8,6 @@ namespace PerfectChess
 {
     static class Global
     {
-        public const bool USE_TEST = true;
+        public const bool USE_TEST = false;
     }
 }

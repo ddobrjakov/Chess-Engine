@@ -14,6 +14,7 @@ namespace PerfectChess
         public List<int> LegalMoves()
         {
             TEST_LegalMovesCallCount++;
+            if (this.MovesFiftyRuleCount >= 50) return new List<int>();
             bool Check = IsInCheck(ColorToMove);
 
 

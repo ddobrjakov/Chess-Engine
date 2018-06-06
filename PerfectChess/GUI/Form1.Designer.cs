@@ -121,7 +121,7 @@
             this.Controls.Add(this.TestOutput);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
-            this.Text = "PerfectChess Engine";
+            this.Text = "Chess Engine";
             this.ResumeLayout(false);
             this.PerformLayout();
 
